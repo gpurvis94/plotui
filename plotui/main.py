@@ -1,4 +1,4 @@
-from views.views import View
+from views.view import View
 
 
 def main():

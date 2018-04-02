@@ -1,2 +1,2 @@
 # plotui
-This is super preliminary stuff, for now run the program using the bin/run.py file. Edit the contents of the file to change the output, examples and usage are given within the file.
+This is super preliminary stuff, and isn't really functional right now. Will keep on working on it and should have basic graphs soonish.

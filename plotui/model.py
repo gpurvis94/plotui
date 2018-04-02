@@ -88,36 +88,6 @@ class Model_1(object):
         s.tg = np.log(s.n_i) + ((p.l + p.s)/p.v)*(s.n_i - 1)
 
 
-# class ObservableLineList(object):
-#     """
-#     A class which allows subscribers to fire events when a line is added
-#     or removed from a list.
-#     """
-#     def __init__(self, initial_value=None):
-#         self.lines = [initial_value]
-#         self.plot_callbacks = {}
-#         self.remove_callbacks = {}
-
-#     def add_plot_callback(self, func):
-#         self.plot_callbacks[func] = 1
-
-#     def add_remove_callback(self, func):
-#         self.remove_callbacks[func] = 1
-
-#     def plot(self, line):
-#         self.lines.append(line)
-#         for func in self.plot_callbacks:
-#             func(line)
-
-#     def remove(self, index=None):
-#         if index is None:
-#             (line,) = self.lines.pop()
-#         else
-#             (line,) = self.lines.pop(index)
-#         for func in self.remove_callbacks:
-#             func(line)
-
-
 class ModelGrapher(object):
     """
     A class containing the OO interface for plotting from specific data
