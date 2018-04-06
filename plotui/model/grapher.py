@@ -1,91 +1,7 @@
 import numpy as np
 import matplotlib
 from matplotlib.figure import Figure
-matplotlib.use('TkAgg')  # Must be done before importing pyplot
-
-
-class Conversions:
-    """
-    A helper class for static conversion methods.
-    """
-    @staticmethod
-    def mph_to_metres(value):
-        """
-        Converts a miles per hour value into a metres per second value.
-        :param float value: The miles per hour value to be converted.
-        :return float: The converted value.
-        """
-        return value*1609.34/3600
-
-
-class BridgeSide(object):
-    """
-    A class detailing the properties of a single side of a bridge.
-    """
-    def __init__(self,
-                 arrival_rate=10,
-                 initial_queue=10,
-                 ):
-        self.Q = arrival_rate
-        self.n_i = initial_queue
-        self.tg = None
-        self.tr = None
-
-
-class GeneralProperties(object):
-    """
-    A class detailing the general properties pertaining to the bridge
-    and both sides of the bridge.
-    """
-    def __init__(self,
-                 bridge_length=20.0,
-                 car_length=4.5,
-                 separation_distance=2.0,
-                 crossing_velocity=20.0,
-                 ):
-        """
-        Sets the values. Default values will be used if not listed.
-        :param float bridge_length: The length of the bridge, metres.
-        :param float car_length: The length of an average car, metres.
-        :param float separation_distance: Distance between cars, metres.
-        :param float crossing_velocity: Crossing velocity, miles ph.
-        """
-        self.L = bridge_length
-        self.l = car_length
-        self.s = separation_distance
-        self.v = Conversions.mph_to_metres(crossing_velocity)
-
-
-class Model_1(object):  
-    """
-    A class containing model state information.
-    """
-    def __init__(self,
-                 side=BridgeSide(),
-                 props=GeneralProperties(),
-                 ):
-        """
-        :param BridgeSide side: Both sides of the bridge data.
-        :param GeneralProperties props: Non-side specific information.
-        """
-        # Save references to the 
-        self.i = side
-        self.j = side
-        self.p = props
-
-        # Calculate intial values of related params
-        self.calc_tg(self.i)
-        self.calc_tg(self.j)
-
-    def calc_tg(self, s, p=None):
-        """
-        Calculates tg. Current limits are 30s < tg < 120s.
-        :param BridgeSide s: The side for which to calculate tg.
-        :param GeneralProperties p: The general data properties to use.
-        """
-        if p is None:
-            p = self.p
-        s.tg = np.log(s.n_i) + ((p.l + p.s)/p.v)*(s.n_i - 1)
+matplotlib.use('TkAgg')
 
 
 class AxesLimits(object):
@@ -120,20 +36,30 @@ class AxesLimits(object):
             self.xmin = np.min(xdata)
             self.xmax = np.max(xdata)
         if ydata is not None:
-        self.ymin = np.min(ydata)
-        self.ymax = np.max(ydata)
+            self.ymin = np.min(ydata)
+            self.ymax = np.max(ydata)
 
 
 class PlotData(object):
     """
     Holds the axis data and line plot for each plotted line.
     """
-    def __init__(self, key=None, xdata, ydata, line=None):
+    def __init__(self, plot_model, xdata, ydata, key=None, line=None):
+        self.plot_model = plot_model
         self.xdata = xdata
         self.ydata = ydata
         self.line = line
         self.limits = AxesLimits()
         self.limits.update_limits_from_list(xdata=self.xdata, ydata=self.ydata)
+
+    def update_plot_data(self, plot_args):
+        """
+        Calculates data using methods on the plot_model
+        """
+        self.xdata = self.plot_model.get_xdata(plot_args.x_var, plot_args.xmax,
+                                               plot_args.xmin)
+        self.ydata = self.plot_model.get_ydata(plot_args.y_var, plot_args.ymin,
+                                               plot_args.ymax, self.xdata)
 
 
 class ModelGrapher(object):
@@ -150,63 +76,54 @@ class ModelGrapher(object):
 
         # Instantiate and save references to matplotlib artists
         self._fig = Figure()
-        self._axes = self.fig.add_subplot(111)
+        self._axes = self._fig.add_subplot(111)
         self._plot_data = {}
         self._axes_limits = AxesLimits()
 
         # Set default titles and descriptions
-        self.axes.set_title("Title")
-        self.axes.set_xlabel("x axis")
-        self.axes.set_ylabel("y axis")
+        self._axes.set_title("Title")
+        self._axes.set_xlabel("x axis")
+        self._axes.set_ylabel("y axis")
 
     ####################################################################
     #                         Artist retrieval                         #
     ####################################################################
 
     def get_plot_figure(self):
-        return self.fig
+        return self._fig
 
     ####################################################################
     #                       Getting/setting data                       #
     ####################################################################
 
-    def set_xdata(self, range_tup):
-        self._xdata['x'] = np.arange(float(range_tup[0]), float(range_tup[1]), float(range_tup[2]))
-
-    def edit_ydata_set(self, key):
-        # Remove the current line from the graph and redraw
-        if key in self._ydata:
-            self.remove_data_set(key)
-        self._ydata[key] = self._xdata['x']**np.pi * (np.random.rand() * 10)
+    def update_plot_data(self, key, plot_args):
+        # Update the plot data, remove the current line and then redraw
+        self._plot_data[key].update_plot_data(plot_args)
 
         self._calc_axes_limits()
-        self._plot_line(key)
+        self._plot_line(self._plot_data[key])
 
-    def remove_data_set(self, key):
+    def delete_plot(self, key):
         # Return and remove the line from the list and unplot it
-        (line,) = self.lines.pop(key, None)
-        line.remove()
-        del self._ydata[key]
+        self._plot_data[key].line.remove()
+        del self._plot_data[key]
+
+        # Recalculate axis limits
         self._calc_axes_limits()
 
     ####################################################################
     #                             Plotting                             #
     ####################################################################
 
-    def _plot_line(self, ykey, param_dict=None):
+    def _plot_line(self, plot_data):
         """
-        A helper function to make a graph. TODO
-        :param Axes ax: The axes to draw to.
-        :param np.array data1: The x data.
-        :param np.array data2: The y data.
-        :param dict param_dict: Dictionary of kwargs to pass to ax.plot.
-        :return list: List of artists added.
+        Plots a line to the canvas from a PlotData class.
         """
-        # Working around pythons dislike of mutable default arguments
-        if param_dict is None:
-            param_dict = {}
-        # Plot the line and append the Line2D object to a list
-        self.lines[ykey] = self.axes.plot(self._xdata['x'], self._ydata[ykey], **param_dict)
+        # TODO when code vbuilds refactor to pass plot_data instead of key
+        self.plot_data[key].line = self.axes.plot(
+            self.plot_data[key].xdata,
+            self.plot_data[key].ydata
+            )
 
     ####################################################################
     #                        Axes limit methods                        #
@@ -229,7 +146,7 @@ class ModelGrapher(object):
 
     def try_set_ylim(self, y_min=None, y_max=None):
         # Don't set limits if there is no data
-        if len(self._ydata) == 0:
+        if len(self._plot_data) == 0:
             return False
         # If optional parameters are omitted, populate from stored data
         y_min = self._axes_limits.ymin if y_min is None else y_min
@@ -238,7 +155,7 @@ class ModelGrapher(object):
         return True
 
     def _calc_axes_limits(self):
-        if len(self._xdata) == 0 or len(self._ydata) == 0:
+        if len(self._xdata) == 0 or len(self._plot_data) == 0:
             return
 
         min_list = []
@@ -252,7 +169,7 @@ class ModelGrapher(object):
 
         min_list = []
         max_list = []
-        for key, val in self._ydata.items():
+        for key, val in self._plot_data.items():
             min_list.append(np.min(val))
             max_list.append(np.max(val))
 

@@ -1,3 +1,4 @@
+from tkinter import messagebox
 from tkinter import ttk
 
 from controllers import Controller
@@ -13,31 +14,31 @@ class MainWindowFrame(ttk.Frame):
     """
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent, border=4, style='Main.TFrame')
-        self.parent = parent
-        self.c = Controller(self)
+        self._parent = parent
+        self._c = Controller(self)
 
         self._create_widgets()
         self._position_widgets()
 
     def _create_widgets(self):
         # Instantiate nested widgets
-        self.plot = PlotFrame(self, self.c)
-        self.graph_options = GraphOptionsFrame(self, self.c)
-        self.export_options = ExportOptionsFrame(self, self.c)
-        self.plot_options = PlotOptionsFrame(self, self.c)
+        self._plot = PlotFrame(self, self._c)
+        self._graph_options = GraphOptionsFrame(self, self._c)
+        self._export_options = ExportOptionsFrame(self, self._c)
+        self._plot_options = PlotOptionsFrame(self, self._c)
 
     def _position_widgets(self):
         # Position nested widgets
 
         # Row 0
-        self.graph_options.grid(row=0, column=0, sticky="nsew")
-        self.plot.grid(row=0, column=1, rowspan=2, sticky="nsew")
+        self._graph_options.grid(row=0, column=0, sticky="nsew")
+        self._plot.grid(row=0, column=1, rowspan=2, sticky="nsew")
 
         # Row 1
-        self.export_options.grid(row=1, column=0, sticky="nsew")
+        self._export_options.grid(row=1, column=0, sticky="nsew")
 
         # Row 2
-        self.plot_options.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        self._plot_options.grid(row=2, column=0, columnspan=2, sticky="nsew")
 
         # Configure base grid layout
         self.rowconfigure(0, weight=1)
@@ -48,3 +49,9 @@ class MainWindowFrame(ttk.Frame):
 
     def redraw_canvas(self):
         self.plot.canvas.draw()
+
+    def report_error(self, message):
+        """
+        Displays a messagebox with an error message.
+        """
+        messagebox.showinfo("Error", message)

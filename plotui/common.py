@@ -1,3 +1,35 @@
+from enum import Enum, auto
+
+
+class PlotType(Enum):
+    STRAIGHT_LINE = auto()
+    MODEL_1 = auto()
+
+    @staticmethod
+    def to_string(plot_type):
+        if _plottype_to_str is not None:
+            return _plottype_to_str[plot_type]
+
+
+_plottype_to_str = {
+    PlotType.STRAIGHT_LINE: 'Straight line',
+    PlotType.MODEL_1: 'Model 1'
+}
+
+
+class PlotArgs(object):
+    """
+    Stores information the user can specify for plotting.
+    """
+    def __init__(self, x_var=None, y_var=None, xmin=None, xmax=None, ymin=None,
+                 ymax=None):
+        self.x_var = x_var
+        self.y_var = y_var
+        self.xmax = xmax
+        self.xmin = xmin
+        self.ymax = ymax
+        self.ymin = ymin
+
 class Observable(object):
     """
     A class which allows subscribers to fire events when changing a

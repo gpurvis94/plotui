@@ -3,6 +3,7 @@ from tkinter import ttk
 import uuid
 
 from views.styles import BlueButton
+from common import PlotType
 
 
 class PlotOptionsFrame(ttk.Frame):
@@ -10,163 +11,188 @@ class PlotOptionsFrame(ttk.Frame):
     The visual design for the Plot element.
     """
     def __init__(self, parent, controller):
-        # Initialize frame
         ttk.Frame.__init__(self, parent, style='Sub.TFrame', border=5)
-        self.c = controller
-        self.dynamic_yaxis_data_set = []
+        self._c = controller
+        self._plots = {}
 
-        # Create and position widgets
-        self._create_widgets()
-        self._position_widgets()
-        self._add_axis_data_set()
-
-    def _create_widgets(self):
-        # Instantiate nested widgets
-        self.main_title_lbl = ttk.Label(self, text="Plot Options",
-                                        style='Title.TLabel')
-        self.xaxis_title_lbl = ttk.Label(self, text="X axis data set",
-                                         style='SubTitle.TLabel')
-        self.udpate_xdata_btn = BlueButton(master=self, text="Update x data",
-                                           command=self._update_xdata)
-        self.xaxis_data_set = AxisDataSet(self, self.c, key=0)
-        self.yaxis_title_lbl = ttk.Label(self, text="Y axis data sets",
-                                         style='SubTitle.TLabel')
-        self.add_data_set_btn = BlueButton(master=self, text="Add data set",
-                                           command=self._add_axis_data_set)
-
-        # TODO add button below y axis data set for adding y axis plots
-        # list y axis plots as alistbox
-        # # inherit from AxisDataSet
-
-    def _position_widgets(self):
-        # Position nested widgets
-        self.main_title_lbl.grid(row=0, column=0)
-        self.xaxis_title_lbl.grid(row=1, column=0, sticky='w')
-        self.udpate_xdata_btn.grid(row=2, column=0, sticky='w', pady=1)
-        self.xaxis_data_set.grid(row=3, column=0, sticky='w', pady=1)
-        self.yaxis_title_lbl.grid(row=4, column=0, sticky='w')
-        self.add_data_set_btn.grid(row=5, column=0, sticky='w', pady=1)
-
-        # Configure rows and columns
-        self.grid_columnconfigure(0, weight=1)
-
-    def _update_xdata(self):
-        range_tup = self.xaxis_data_set.get_range()
-        self.c.set_xdata(range_tup)
-
-    def _add_axis_data_set(self):
-        yaxis_data_set = YAxisDataSet(self, self.c)
-        self.dynamic_yaxis_data_set.append(yaxis_data_set)
-        yaxis_data_set.grid(sticky='w', pady=1)
-
-
-class AxisDataSet(ttk.Frame):
-    """
-    A frame chich holds customisable options for setting axis data sets.
-    """
-    def __init__(self, parent, controller, key=None):
-        # Initialize frame
-        ttk.Frame.__init__(self, parent)
-        self.c = controller
-        if key is None:
-            key = str(uuid.uuid4())
-        self.key = key
-
-        # Create and position widgets/variables
         self._init_variables()
         self._create_widgets()
         self._position_widgets()
 
     def _init_variables(self):
-        # Instantiate widget variables
-        self.variable_list = ("one", "two", "three")
-        self.var_min = tk.StringVar(value=0)
-        self.var_max = tk.StringVar(value=1)
-        self.var_interval = tk.StringVar()
+        self._selected_type = tk.StringVar(value='Straight line')
+        self._plot_type_to_widget = {
+            'Straight line': PlotOptions1,
+            'Model 1': "TODO",
+            }
+        # TODO Change this to get the types of stuff from controller
+        self._plot_type_list = ('Straight line', 'More lines')
 
     def _create_widgets(self):
-        # Instantiate nested widgets
-        self.var_lbl = ttk.Label(master=self, text='Model variable:')
-        self.var_combo = ttk.Combobox(self, width=10,
-                                      values=self.variable_list)
-        self.range_lbl = ttk.Label(master=self, text='    Range:')
-        self.var_min_entry = ttk.Entry(master=self, width=5,
-                                       textvariable=self.var_min)
-        self.to_lbl = ttk.Label(master=self, text='to')
-        self.var_max_entry = ttk.Entry(master=self, width=5,
-                                       textvariable=self.var_max)
-        self.interval_lbl = ttk.Label(master=self, text='    Interval:')
-        self.var_interval_entry = ttk.Entry(master=self, width=5,
-                                            textvariable=self.var_interval)
+        self._main_title_lbl = ttk.Label(self, text="Plot Options",
+            style='Title.TLabel')
+        self._add_plot_btn = BlueButton(master=self, text="Add plot",
+            command=self._add_plot)
+        self._plot_type_combo = ttk.Combobox(self, width=15,
+            textvariable=self._selected_type, values=self._plot_type_list)
+        self._plots_title_lbl = ttk.Label(self, text="Plots",
+            style='SubTitle.TLabel')
 
     def _position_widgets(self):
-        # Position nested widgets
-        self.var_lbl.grid(row=0, column=0)
-        self.var_combo.grid(row=0, column=1)
-        self.range_lbl.grid(row=0, column=2)
-        self.var_min_entry.grid(row=0, column=3)
-        self.to_lbl.grid(row=0, column=4)
-        self.var_max_entry.grid(row=0, column=5)
-        self.interval_lbl.grid(row=0, column=6)
-        self.var_interval_entry.grid(row=0, column=7)
+        self._main_title_lbl.grid(row=0, column=0)
+        self._add_plot_btn.grid(row=1, column=0, sticky='w', pady=1)
+        self._plot_type_combo.grid(row=1, column=1, sticky='w', pady=1)
+        self._plots_title_lbl.grid(row=2, column=0, sticky='w')
 
-    def get_range(self):
-        return (self.var_min.get(), self.var_max.get(),
-                self.var_interval.get())
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+
+    ####################################################################
+    #                          Editing plots                           #
+    ####################################################################
+
+    def _add_plot(self):
+        """
+        Adds a plot data set widget according to the type specified
+        """
+        # If the selected plot is not recognised report error
+        if self._selected_type.get() not in self._plot_type_to_widget.keys():
+            self._c.report_error(
+                f'Unknown plot type: "{self._selected_type.get()}".')
+            return
+
+        plot = self._plot_type_to_widget[self._selected_type.get()](
+            self, self._c, self._selected_type.get())
+        self._plots[plot.key] = plot
+        plot.grid(sticky='w', columnspan=2, pady=1)
 
 
-class YAxisDataSet(AxisDataSet):    # TODO - store x axis data for each line
+class BaseDataOptionsFrame(ttk.Frame):
     """
-    A frame which holds customisable options for setting multiple data
-    sets for the y axis.
+    The base class from which to inherit functionality
     """
-    def __init__(self, parent, controller, key=None):
-        # Initialize frame
-        super().__init__(parent, controller, key)
+    def __init__(self, parent, controller, plot_type):
+        ttk.Frame.__init__(self, parent)
+        self._c = controller
+        self._plot_type = plot_type
+        self._key = str(uuid.uuid4())
+
+        self._init_variables()
+        self._create_widgets()
+        self._position_widgets()
 
     def _init_variables(self):
-        # Call parent method
-        super(YAxisDataSet, self)._init_variables()
-
-        # Instantiate observable variables
-        self.legend_txt = tk.StringVar(value="y data name")
-        self.is_legend = tk.BooleanVar(value=False)
-        self.is_plotted = tk.BooleanVar(value=False)
+        self._is_legend = tk.BooleanVar(value=False)
+        self._legend_txt = tk.StringVar(value="Straight line")
 
     def _create_widgets(self):
-        # Call parent method
-        super(YAxisDataSet, self)._create_widgets()
-
-        # Instantiate nested widgets
-        self.legend_lbl = ttk.Label(master=self, text='    Include legend:')
-        self.legend_chkbtn = ttk.Checkbutton(self, onvalue=True, text="",
-                                             variable=self.is_legend)
-        self.legend_entry = ttk.Entry(master=self, width=15,
-                                      textvariable=self.legend_txt)
-        self.plot_lbl = ttk.Label(master=self, text='    Show line:')
-        self.plot_chkbtn = ttk.Checkbutton(self, onvalue=True, text="",
-                                             variable=self.is_plotted)
-        self.plot_btn = BlueButton(master=self, text="Redraw plot",
-                                   command=self.edit_data_set)
-        self.destroy_btn = BlueButton(master=self, text="Remove plot",
-                                      command=self.destroy_data_set)
+        self._plot_type_lbl = ttk.Label(master=self,
+            text='Plot type: "%s"    ' % self._plot_type)
+        self._legend_chkbtn = ttk.Checkbutton(self, onvalue=True,
+            text="Legend: ", variable=self._is_legend)
+        self._legend_entry = ttk.Entry(master=self, width=15,
+            textvariable=self._legend_txt)
+        self._plot_data_options = PlotDataOptions1(self, self._c)
+        self._actions = PlotActionsFrame(self, self._c)
 
     def _position_widgets(self):
-        # Call parent method
-        super(YAxisDataSet, self)._position_widgets()
+        self._plot_type_lbl.grid(row=0, column=0)
+        self._legend_chkbtn.grid(row=0, column=1)
+        self._legend_entry.grid(row=0, column=2)
+        self._plot_data_optionslo.grid(row=0, column=3)
+        self._actions.grid(row=0, column=4)
 
-        # Position nested widgets
-        self.legend_lbl.grid(row=0, column=8)
-        self.legend_chkbtn.grid(row=0, column=9)
-        self.legend_entry.grid(row=0, column=10)
-        self.plot_lbl.grid(row=0, column=11)
-        self.plot_chkbtn.grid(row=0, column=12)
-        self.plot_btn.grid(row=0, column=13, padx=2)
-        self.destroy_btn.grid(row=0, column=14, padx=2)
+# TODO work out whether to inherit sort out the dictionary ahh
+class TwoRange_DataOptionsFrame(ttk.Frame):
+    """
+    A frame which holds customisable options for setting axis data sets.
+    """
+    def __init__(self, parent, controller):
+        self._create_widgets()
+        self._position_widgets()
 
-    def edit_data_set(self):
-        self.c.edit_data_set(self.key)
+    def _create_widgets(self):
+        self._x_range = PlotRangeFrame(self, self._c,
+            message="    X range: ")
+        self._y_range = PlotRangeFrame(self, self._c,
+            message="    Y range: ")
 
-    def destroy_data_set(self):
-        self.c.remove_data_set(self.key)
-        self.destroy()
+    def _position_widgets(self):
+        self._x_range.grid(row=0, column=0)
+        self._y_range.grid(row=0, column=1)
+
+
+class PlotRangeFrame(ttk.Frame):
+    """
+    A widget that allows the user to specify the axis data range.
+    """
+    def __init__(self, parent, controller, message):
+        ttk.Frame.__init__(self, parent)
+        self._c = controller
+
+        self._init_variables()
+        self._create_widgets(message)
+        self._position_widgets()
+
+    def _init_variables(self):
+        self._min = tk.StringVar(value=0)
+        self._max = tk.StringVar(value=0)
+
+    def _create_widgets(self, message):
+        self._description_lbl = ttk.Label(self, text=message)
+        self._min_entry = ttk.Entry(master=self, width=5,
+                                       textvariable=self._min)
+        self._to_lbl = ttk.Label(master=self, text='to')
+        self._max_entry = ttk.Entry(master=self, width=5,
+                                       textvariable=self._max)
+
+    def _position_widgets(self):
+        self._description_lbl.grid(row=0, column=0, sticky='w')
+        self._min_entry.grid(row=0, column=1, sticky='w')
+        self._to_lbl.grid(row=0, column=2, sticky='w')
+        self._max_entry.grid(row=0, column=3, sticky='w')
+
+
+class PlotActionsFrame(ttk.Frame):
+    """
+    A widget that contains the buttons that allow the user to show,
+    update, or delete a plot.
+    """
+    def __init__(self, parent, controller):
+        # Initialize frame
+        ttk.Frame.__init__(self, parent)
+        self._c = controller
+        self._parent = parent
+
+        # Create and position widgets
+        self._init_variables()
+        self._create_widgets()
+        self._position_widgets()
+
+    def _init_variables(self):
+        self._is_show_plot = tk.BooleanVar(value=True)
+
+    def _create_widgets(self):
+        self._show_plot_chk = ttk.Checkbutton(self, onvalue=True,
+            text="Show plot", variable=self._is_show_plot)
+        self._update_plot_btn = BlueButton(master=self, text="Redraw plot",
+            command=self.update_plot)
+        self._remove_plot_btn = BlueButton(master=self, text="Remove plot",
+            command=self.delete_plot)
+
+    def _position_widgets(self):
+        self._show_plot_chk.grid(row=0, column=0, padx=2)
+        self._update_plot_btn.grid(row=0, column=1, padx=2)
+        self._remove_plot_btn.grid(row=0, column=2, padx=2)
+
+    ####################################################################
+    #                             Commands                             #
+    ####################################################################
+
+    def update_plot(self):
+        self._c.edit_data_set(self._parent.key)
+
+    def delete_plot(self):
+        self._c.delete_plot(self._parent.key)
+        self._parent.destroy()
+

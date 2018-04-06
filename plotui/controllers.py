@@ -1,4 +1,5 @@
-from model.model1 import Model_1, ModelGrapher
+from model.grapher import ModelGrapher
+from model.plotfunctions.model1 import Model_1
 
 
 class Controller(object):
@@ -14,6 +15,14 @@ class Controller(object):
     def get_plot_figure(self):
         return self.grapher.get_plot_figure()
 
+    ####################################################################
+    #                         Error reporting                          #
+    ####################################################################
+
+    def report_error(self, message):#
+        # TODO make GUI print error using messagebox widget
+        self.view.report_error(message)
+
     # Data set functions
 
     def set_xdata(self, range_tup):
@@ -23,8 +32,8 @@ class Controller(object):
         self.grapher.edit_ydata_set(key)
         self.view.redraw_canvas()
 
-    def remove_data_set(self, key):
-        self.grapher.remove_data_set(key)
+    def delete_plot(self, key):
+        self.grapher.delete_plot(key)
         self.view.redraw_canvas()
 
     # Title methods
