@@ -46,5 +46,7 @@ class View(tk.Tk):
         self.s.configure('SubTitle.TLabel', font=self.sub_title_font,
                          padding="2")
         self.s.configure('Title.TLabel', font=self.title_font, padding="4")
-
         self.s.configure('TButton', background='white')
+
+        # Checkbuttons
+        self.s.configure('TCheckbutton', background='white')
