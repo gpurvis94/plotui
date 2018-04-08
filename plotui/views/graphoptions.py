@@ -81,13 +81,13 @@ class GraphLabelOptionsFrame(ttk.Frame):
         # Position nested widgets
         self.main_title_lbl.grid(row=1, column=0, columnspan=2, sticky='w')
 
-        self.title_btn.grid(row=2, column=0, sticky="w", pady=1)
-        self.x_label_btn.grid(row=3, column=0, sticky="w", pady=1)
-        self.y_label_btn.grid(row=4, column=0, sticky="w", pady=1)
+        self.title_btn.grid(row=2, column=0, sticky="w", pady=2)
+        self.x_label_btn.grid(row=3, column=0, sticky="w", pady=2)
+        self.y_label_btn.grid(row=4, column=0, sticky="w", pady=2)
 
-        self.title_entry.grid(row=2, column=1, sticky="w", pady=1)
-        self.x_label_entry.grid(row=3, column=1, sticky="w", pady=1)
-        self.y_label_entry.grid(row=4, column=1, sticky="w", pady=1)
+        self.title_entry.grid(row=2, column=1, sticky="w", pady=2)
+        self.x_label_entry.grid(row=3, column=1, sticky="w", pady=2)
+        self.y_label_entry.grid(row=4, column=1, sticky="w", pady=2)
 
         # Configure rows and columns
         self.grid_columnconfigure(0, pad=5)
@@ -118,9 +118,9 @@ class GraphScalingOptionsFrame(ttk.Frame):
                                 style='SubTitle.TLabel')
 
         self.xmin_lbl = ttk.Label(master=self, text='X-axis min')
-        self.xmax_lbl = ttk.Label(master=self, text='X-axis max')
+        self.xmax_lbl = ttk.Label(master=self, text=' X-axis max')
         self.ymin_lbl = ttk.Label(master=self, text='Y-axis min')
-        self.ymax_lbl = ttk.Label(master=self, text='Y-axis max')
+        self.ymax_lbl = ttk.Label(master=self, text=' Y-axis max')
 
         self.xmin_entry = ttk.Entry(master=self, width=10,
                                     textvariable=self.xmin_txt)
@@ -142,19 +142,19 @@ class GraphScalingOptionsFrame(ttk.Frame):
 
         # Row 1
         self.xmin_lbl.grid(row=1, column=0, sticky='w')
-        self.xmin_entry.grid(row=1, column=1, sticky='w', pady=1)
+        self.xmin_entry.grid(row=1, column=1, sticky='w', pady=2)
         self.xmax_lbl.grid(row=1, column=2, sticky='w')
-        self.xmax_entry.grid(row=1, column=3, sticky='w', pady=1)
+        self.xmax_entry.grid(row=1, column=3, sticky='w', pady=2)
         
         # Row 2
         self.ymin_lbl.grid(row=2, column=0, sticky='w')
-        self.ymin_entry.grid(row=2, column=1, sticky='w', pady=1)
+        self.ymin_entry.grid(row=2, column=1, sticky='w', pady=2)
         self.ymax_lbl.grid(row=2, column=2, sticky='w')
-        self.ymax_entry.grid(row=2, column=3, sticky='w', pady=1)
+        self.ymax_entry.grid(row=2, column=3, sticky='w', pady=2)
 
         # Row 3
-        self.scale_btn.grid(row=3, column=0, columnspan=2, pady=1)
-        self.autoscale_btn.grid(row=3, column=2, columnspan=2, pady=1)
+        self.scale_btn.grid(row=3, column=0, columnspan=2, pady=2)
+        self.autoscale_btn.grid(row=3, column=2, columnspan=2, pady=2)
 
     # Axis scaling methods
 
@@ -165,7 +165,7 @@ class GraphScalingOptionsFrame(ttk.Frame):
                 self.ymin_txt.get(), self.ymax_txt.get()
                 )
         except tk.TclError:
-            self._c.report_error("Scale value must be a number.")
+            self._c.message("Error", "Scale value must be a number.")
 
     def _autoscale_axis(self):
         tup = self._c.autoscale_axis()

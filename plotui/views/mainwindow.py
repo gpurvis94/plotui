@@ -48,13 +48,24 @@ class MainWindowFrame(ttk.Frame):
         self.columnconfigure(1, weight=1)
 
     def redraw_canvas(self):
-        self._plot.canvas.draw()
-
-    def report_error(self, message):
-        """
-        Displays a messagebox with an error message.
-        """
-        messagebox.showinfo("Error", message)
+        self._plot.redraw_canvas()
 
     def get_plot_args(self, key):
         return self._plot_options.get_plot_args(key)
+
+    ####################################################################
+    #                            Exporting                             #
+    ####################################################################
+
+    def export_png(self, file_name):
+        self._plot.export_png(file_name)
+
+    ####################################################################
+    #                         Error reporting                          #
+    ####################################################################
+
+    def message(self, title, message):
+        """
+        Displays a messagebox with an error message.
+        """
+        messagebox.showinfo(title, message)

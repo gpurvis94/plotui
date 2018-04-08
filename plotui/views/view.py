@@ -49,4 +49,7 @@ class View(tk.Tk):
 
         # Checkbuttons
         self.s.configure('TCheckbutton', background='white')
+
+        # Radiobuttons
+        self.s.configure('TRadiobutton', background='white')
         

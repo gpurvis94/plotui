@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib
 from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 matplotlib.use('TkAgg')
+
 
 from common import PlotType
 from model.plotfunctions.general import StraightLinePlotFunction
@@ -154,7 +156,7 @@ class ModelGrapher(object):
             try:
                 self._plot_data[key].update_plot_data(plot_args)
             except ValueError:
-                self._c.report_error("bad")
+                self._c.message("Error", "bad")
 
             self._calc_all_axes_limits()
             self._plot_line(key)
@@ -217,3 +219,13 @@ class ModelGrapher(object):
     ####################################################################
     #                            Exporting                             #
     ####################################################################
+
+    def export_dat(self, file_name):
+        f = open(file_name, "w+")
+        f.write("x y\n")
+        for key, val in self._plot_data.items():
+            for i, x in enumerate(val.xdata):
+                f.write(f'{x} {val.ydata[i]}\n')
+            f.write("\n")
+        f.close()
+

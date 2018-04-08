@@ -84,11 +84,20 @@ class Controller(object):
     #                            Exporting                             #
     ####################################################################
 
-
+    def export(self, selected_index, file_name):
+        # If export type is png image
+        if selected_index == 0:
+            file_name += '.png'
+            self.view.export_png(file_name)
+            
+        # If export type is LaTeX data
+        if selected_index == 1:
+            file_name += '.dat'
+            self.grapher.export_dat(file_name)
 
     ####################################################################
     #                         Error reporting                          #
     ####################################################################
 
-    def report_error(self, message):
-        self.view.report_error(message)
+    def message(self, title, message):
+        self.view.message(title, message)

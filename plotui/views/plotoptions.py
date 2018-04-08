@@ -34,13 +34,13 @@ class PlotOptionsFrame(ttk.Frame):
             style='SubTitle.TLabel')
 
     def _position_widgets(self):
-        self._main_title_lbl.grid(row=0, column=0)
-        self._add_plot_btn.grid(row=1, column=0, sticky='w', pady=1)
-        self._plot_type_combo.grid(row=1, column=1, sticky='w', pady=1)
+        self._main_title_lbl.grid(row=0, column=0, columnspan=2)
+        self._add_plot_btn.grid(row=1, column=0, sticky='w', pady=2)
+        self._plot_type_combo.grid(row=1, column=1, sticky='w', pady=2)
         self._plots_title_lbl.grid(row=2, column=0, sticky='w')
 
-        self.grid_columnconfigure(0, weight=0)
-        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=0, pad=5)
+        self.grid_columnconfigure(1, weight=1, pad=5)
 
     def _add_plot(self):
         """
@@ -50,7 +50,7 @@ class PlotOptionsFrame(ttk.Frame):
             PlotType.str_to_plottype(self._selected_type.get()))
         self._plots[plot.key] = plot
         self._c.add_plot(plot.key, plot.plot_type)
-        plot.grid(sticky='w', columnspan=2, pady=1)
+        plot.grid(sticky='w', columnspan=2, pady=2)
 
     ####################################################################
     #                     Controller communication                     #
@@ -68,7 +68,7 @@ class PlotOptionsFrame(ttk.Frame):
                 )
             return plot_args
         except tk.TclError:
-            self._c.report_error("Range values must be a number.")
+            self._c.message("Error", "Range values must be a number.")
 
 
 class DataOptionsFrame(ttk.Frame):

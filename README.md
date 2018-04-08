@@ -13,7 +13,12 @@ Run the program with the file "PlotUI/plotui/main.py" OR from the shell by typin
 #### Tick Options
 - TODO
 ### Export Options
-- TODO
+- **[Export type]**: Use the radio buttons to select your desired export type.
+  - **PNG image**: Exports the graph as a png image.
+  - **LaTeX dat file**: Exports the graph as a dat file for use with the LaTeX package pgfplots.
+    - **[Export mode]**: Currently the export function prints all plot data to a file, separating sets with a new line. See TODO.md for future implementations.
+- **[File name]**: The output file name. A relevant extension will be appended.
+- **[Export]**: Exports the graph as the selected format.
 ### Plot Options
 - **[Add plot]**: Adds a line to the graph. The function of the line is selected from the adjacent drop down box.
 #### Plots
