@@ -3,7 +3,7 @@ from tkinter import ttk
 import uuid
 
 from views.styles import BlueButton
-from common import PlotType
+from common import PlotType, PlotArgs
 
 
 class PlotOptionsFrame(ttk.Frame):
@@ -20,13 +20,8 @@ class PlotOptionsFrame(ttk.Frame):
         self._position_widgets()
 
     def _init_variables(self):
-        self._selected_type = tk.StringVar(value='Straight line')
-        self._plot_type_to_widget = {
-            'Straight line': PlotOptions1,
-            'Model 1': "TODO",
-            }
-        # TODO Change this to get the types of stuff from controller
-        self._plot_type_list = ('Straight line', 'More lines')
+        self._plot_type_strings = self._c.get_plot_function_strings()
+        self._selected_type = tk.StringVar(value=self._plot_type_strings[0])
 
     def _create_widgets(self):
         self._main_title_lbl = ttk.Label(self, text="Plot Options",
@@ -34,7 +29,7 @@ class PlotOptionsFrame(ttk.Frame):
         self._add_plot_btn = BlueButton(master=self, text="Add plot",
             command=self._add_plot)
         self._plot_type_combo = ttk.Combobox(self, width=15,
-            textvariable=self._selected_type, values=self._plot_type_list)
+            textvariable=self._selected_type, values=self._plot_type_strings)
         self._plots_title_lbl = ttk.Label(self, text="Plots",
             style='SubTitle.TLabel')
 
@@ -47,35 +42,45 @@ class PlotOptionsFrame(ttk.Frame):
         self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)
 
-    ####################################################################
-    #                          Editing plots                           #
-    ####################################################################
-
     def _add_plot(self):
         """
         Adds a plot data set widget according to the type specified
         """
-        # If the selected plot is not recognised report error
-        if self._selected_type.get() not in self._plot_type_to_widget.keys():
-            self._c.report_error(
-                f'Unknown plot type: "{self._selected_type.get()}".')
-            return
-
-        plot = self._plot_type_to_widget[self._selected_type.get()](
-            self, self._c, self._selected_type.get())
+        plot = DataOptionsFrame(self, self._c,
+            PlotType.str_to_plottype(self._selected_type.get()))
         self._plots[plot.key] = plot
+        self._c.add_plot(plot.key, plot.plot_type)
         plot.grid(sticky='w', columnspan=2, pady=1)
 
+    ####################################################################
+    #                     Controller communication                     #
+    ####################################################################
 
-class BaseDataOptionsFrame(ttk.Frame):
+    def get_plot_args(self, key):
+        try:
+            return PlotArgs(
+                xvar=self._plots[key].get_xvar(),
+                xmin=self._plots[key].get_xmin(),
+                xmax=self._plots[key].get_xmax(),
+                yvar=self._plots[key].get_yvar(),
+                ymin=self._plots[key].get_ymin(),
+                ymax=self._plots[key].get_ymax(),
+                )
+            return plot_args
+        except tk.TclError:
+            self._c.report_error("Range values must be a number.")
+
+
+class DataOptionsFrame(ttk.Frame):
     """
     The base class from which to inherit functionality
     """
     def __init__(self, parent, controller, plot_type):
         ttk.Frame.__init__(self, parent)
         self._c = controller
-        self._plot_type = plot_type
-        self._key = str(uuid.uuid4())
+        self.plot_type = plot_type
+        self._plot_type_string = PlotType.to_string(plot_type)
+        self.key = str(uuid.uuid4())
 
         self._init_variables()
         self._create_widgets()
@@ -87,39 +92,90 @@ class BaseDataOptionsFrame(ttk.Frame):
 
     def _create_widgets(self):
         self._plot_type_lbl = ttk.Label(master=self,
-            text='Plot type: "%s"    ' % self._plot_type)
+            text='Plot type: "%s"    ' % self._plot_type_string)
         self._legend_chkbtn = ttk.Checkbutton(self, onvalue=True,
             text="Legend: ", variable=self._is_legend)
         self._legend_entry = ttk.Entry(master=self, width=15,
             textvariable=self._legend_txt)
-        self._plot_data_options = PlotDataOptions1(self, self._c)
+        self._plot_data_options = UserDataOptionsFrame(
+            self, self._c, self.plot_type)
         self._actions = PlotActionsFrame(self, self._c)
 
     def _position_widgets(self):
         self._plot_type_lbl.grid(row=0, column=0)
         self._legend_chkbtn.grid(row=0, column=1)
         self._legend_entry.grid(row=0, column=2)
-        self._plot_data_optionslo.grid(row=0, column=3)
-        self._actions.grid(row=0, column=4)
+        self._plot_data_options.grid(row=0, column=3)
+        self._actions.grid(row=1, column=1, columnspan=3, sticky='w', pady=2)
 
-# TODO work out whether to inherit sort out the dictionary ahh
-class TwoRange_DataOptionsFrame(ttk.Frame):
+    def get_xvar(self):
+        return self._plot_data_options.selected_xvar.get()
+
+    def get_xmin(self):
+        if self._plot_data_options.display_user_optionns.show_xrange:
+            return self._plot_data_options.xrange.min.get()
+
+    def get_xmax(self):
+        if self._plot_data_options.display_user_optionns.show_xrange:
+            return self._plot_data_options.xrange.max.get()
+
+    def get_yvar(self):
+        return self._plot_data_options.selected_yvar.get()
+
+    def get_ymin(self):
+        if self._plot_data_options.display_user_optionns.show_yrange:
+            return self._plot_data_options.yrange.min.get()
+
+    def get_ymax(self):
+        if self._plot_data_options.display_user_optionns.show_yrange:
+            return self._plot_data_options.yrange.max.get()
+
+class UserDataOptionsFrame(ttk.Frame):
     """
-    A frame which holds customisable options for setting axis data sets.
+    A frame which holds widgets that the user interacts with to set
+    data options. The model is responsible for determining which options
+    are gridded.
     """
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, plot_type):
+        ttk.Frame.__init__(self, parent)
+        self._c = controller
+        self._plot_type = plot_type
+
+        self._init_variables()
         self._create_widgets()
         self._position_widgets()
+        self._create_optional_widgets()
+
+    def _init_variables(self):
+        self._xvar_strings = self._c.get_xvar_strings(self._plot_type)
+        self.selected_xvar = tk.StringVar(value=self._xvar_strings[0])
+        self._yvar_strings = self._c.get_yvar_strings(self._plot_type)
+        self.selected_yvar = tk.StringVar(value=self._yvar_strings[0])
 
     def _create_widgets(self):
-        self._x_range = PlotRangeFrame(self, self._c,
-            message="    X range: ")
-        self._y_range = PlotRangeFrame(self, self._c,
-            message="    Y range: ")
-
+        self._xvar_lbl = ttk.Label(master=self, text='    X variable:')
+        self._xvar_combo = ttk.Combobox(master=self, width=15,
+            textvariable=self.selected_xvar, values=self._xvar_strings)
+        self._yvar_lbl = ttk.Label(master=self, text='    Y variable:')
+        self._yvar_combo = ttk.Combobox(master=self, width=15,
+            textvariable=self.selected_yvar, values=self._yvar_strings)
+        
     def _position_widgets(self):
-        self._x_range.grid(row=0, column=0)
-        self._y_range.grid(row=0, column=1)
+        self._xvar_lbl.grid(row=0, column=0, sticky='w')
+        self._xvar_combo.grid(row=0, column=1, sticky='w')
+        self._yvar_lbl.grid(row=0, column=3, sticky='w')
+        self._yvar_combo.grid(row=0, column=4, sticky='w')
+
+    def _create_optional_widgets(self):
+        self.display_user_optionns = self._c.get_user_options(self._plot_type)
+
+        if self.display_user_optionns.show_xrange:
+            self.xrange = PlotRangeFrame(self, self._c, message="    Range:")
+            self.xrange.grid(row=0, column=2, sticky='w')
+
+        if self.display_user_optionns.show_yrange:
+            self.yrange = PlotRangeFrame(self, self._c, message="    Range:")
+            self.yrange.grid(row=0, column=5)
 
 
 class PlotRangeFrame(ttk.Frame):
@@ -135,16 +191,16 @@ class PlotRangeFrame(ttk.Frame):
         self._position_widgets()
 
     def _init_variables(self):
-        self._min = tk.StringVar(value=0)
-        self._max = tk.StringVar(value=0)
+        self.min = tk.DoubleVar(value=0)
+        self.max = tk.DoubleVar(value=0)
 
     def _create_widgets(self, message):
         self._description_lbl = ttk.Label(self, text=message)
         self._min_entry = ttk.Entry(master=self, width=5,
-                                       textvariable=self._min)
+                                       textvariable=self.min)
         self._to_lbl = ttk.Label(master=self, text='to')
         self._max_entry = ttk.Entry(master=self, width=5,
-                                       textvariable=self._max)
+                                       textvariable=self.max)
 
     def _position_widgets(self):
         self._description_lbl.grid(row=0, column=0, sticky='w')
@@ -190,7 +246,7 @@ class PlotActionsFrame(ttk.Frame):
     ####################################################################
 
     def update_plot(self):
-        self._c.edit_data_set(self._parent.key)
+        self._c.update_plot(self._parent.key)
 
     def delete_plot(self):
         self._c.delete_plot(self._parent.key)

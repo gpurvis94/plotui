@@ -10,10 +10,20 @@ class PlotType(Enum):
         if _plottype_to_str is not None:
             return _plottype_to_str[plot_type]
 
+    @staticmethod
+    def str_to_plottype(string):
+        if _str_to_plottype is not None:
+            return _str_to_plottype[string]
 
+# TODO Include mapping for None: None? Test if works
 _plottype_to_str = {
     PlotType.STRAIGHT_LINE: 'Straight line',
-    PlotType.MODEL_1: 'Model 1'
+    PlotType.MODEL_1: 'Model 1',
+}
+
+_str_to_plottype = {
+    'Straight line': PlotType.STRAIGHT_LINE,
+    'Model 1': PlotType.MODEL_1,
 }
 
 
@@ -21,76 +31,20 @@ class PlotArgs(object):
     """
     Stores information the user can specify for plotting.
     """
-    def __init__(self, x_var=None, y_var=None, xmin=None, xmax=None, ymin=None,
-                 ymax=None):
-        self.x_var = x_var
-        self.y_var = y_var
-        self.xmax = xmax
+    def __init__(self, xvar=None, xmin=None, xmax=None, yvar=None, ymin=None,
+            ymax=None):
+        self.xvar = xvar
         self.xmin = xmin
-        self.ymax = ymax
+        self.xmax = xmax
+        self.yvar = yvar
         self.ymin = ymin
+        self.ymax = ymax
 
-class Observable(object):
+
+class DisplayUserOptions(object):
     """
-    A class which allows subscribers to fire events when changing a
-    variable's value. Storing callbacks as a dictionary instead of a
-    list means that the same function cannot be added multiple times.
+    Defines which data option widgets to display.
     """
-    def __init__(self, initial_value=None):
-        self.data = initial_value
-        self.callbacks = {}
-
-    def add_callback(self, func):
-        self.callbacks[func] = 1
-
-    def del_callback(self, func):
-        del self.callbacks[func]
-
-    def _do_callbacks(self):
-        for func in self.callbacks:
-            func(self.data)
-
-    def set(self, data):
-        self.data = data
-        self._do_callbacks()
-
-    def get(self):
-        return self.data
-
-    def unset(self):
-        self.data = None
-
-
-class ObservableList(object):
-    """
-    A class which allows subscribers to fire events when changing a
-    variable's value. Storing callbacks as a dictionary instead of a
-    list means that the same function cannot be added multiple times.
-    """
-    def __init__(self, initial_value=None):
-        self.data = [initial_value]
-        self.callbacks = {}
-
-    def add_callback(self, func):
-        self.callbacks[func] = 1
-
-    def del_callback(self, func):
-        del self.callbacks[func]
-
-    def _do_callbacks(self, data):
-        for func in self.callbacks:
-            func(data)
-
-    def append(self, data):
-        self.data.append(data)
-        self._do_callbacks(data)
-
-    def remove(self, data):
-        self.data.remove(data)
-        self._do_callbacks(data)
-
-    def unset(self):
-        self.data = None
-
-    def len(self):
-        return len(self.data)
+    def __init__(self, show_xrange=False, show_yrange=False):
+        self.show_xrange = show_xrange
+        self.show_yrange = show_yrange

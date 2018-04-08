@@ -11,7 +11,7 @@ class GraphOptionsFrame(ttk.Frame):
     def __init__(self, parent, controller):
         # Initialize frame
         ttk.Frame.__init__(self, parent, style='Sub.TFrame', border=5)
-        self.c = controller
+        self._c = controller
 
         self._create_widgets()
         self._position_widgets()
@@ -20,9 +20,9 @@ class GraphOptionsFrame(ttk.Frame):
         # Instantiate nested widgets
         self.main_title_lbl = ttk.Label(self, text="Graph Options",
                                 style='Title.TLabel')
-        self.graph_label_options = GraphLabelOptionsFrame(self, self.c)
-        self.graph_scaling_options = GraphScalingOptionsFrame(self, self.c)
-        self.graph_tick_mark_options = GraphTickMarkOptions(self, self.c)
+        self.graph_label_options = GraphLabelOptionsFrame(self, self._c)
+        self.graph_scaling_options = GraphScalingOptionsFrame(self, self._c)
+        self.graph_tick_mark_options = GraphTickMarkOptions(self, self._c)
 
     def _position_widgets(self):
         # Position nested widgets
@@ -42,7 +42,7 @@ class GraphLabelOptionsFrame(ttk.Frame):
     def __init__(self, parent, controller):
         # Initialize frame
         ttk.Frame.__init__(self, parent)
-        self.c = controller
+        self._c = controller
 
         # Instantiate observable variables
         self.title_txt = tk.StringVar(value="Title")
@@ -61,15 +61,15 @@ class GraphLabelOptionsFrame(ttk.Frame):
         # Buttons
         self.title_btn = BlueButton(
             master=self, text="Add title",
-            command=lambda: self.c.set_title(self.title_txt.get()),
+            command=lambda: self._c.set_title(self.title_txt.get()),
             )
         self.x_label_btn = BlueButton(
             master=self, text="Add x-axis label",
-            command=lambda: self.c.set_xlabel(self.xlabel_txt.get()),
+            command=lambda: self._c.set_xlabel(self.xlabel_txt.get()),
             )
         self.y_label_btn = BlueButton(
             master=self, text="Add y-axis label",
-            command=lambda: self.c.set_ylabel(self.ylabel_txt.get()),
+            command=lambda: self._c.set_ylabel(self.ylabel_txt.get()),
             )
 
         # Entrys
@@ -100,13 +100,13 @@ class GraphScalingOptionsFrame(ttk.Frame):
     def __init__(self, parent, controller):
         # Initialize frame
         ttk.Frame.__init__(self, parent)
-        self.c = controller
+        self._c = controller
 
         # Instantiate observable variables
-        self.xmin_txt = tk.StringVar(value=0.0)
-        self.xmax_txt = tk.StringVar(value=1.0)
-        self.ymin_txt = tk.StringVar(value=0.0)
-        self.ymax_txt = tk.StringVar(value=1.0)
+        self.xmin_txt = tk.DoubleVar(value=0.0)
+        self.xmax_txt = tk.DoubleVar(value=1.0)
+        self.ymin_txt = tk.DoubleVar(value=0.0)
+        self.ymax_txt = tk.DoubleVar(value=1.0)
 
         # Create and position widgets
         self._create_widgets()
@@ -160,15 +160,15 @@ class GraphScalingOptionsFrame(ttk.Frame):
 
     def _scale_axis(self):
         try:
-            self.c.scale_axis(
-                float(self.xmin_txt.get()), float(self.xmax_txt.get()),
-                float(self.ymin_txt.get()), float(self.ymax_txt.get())
+            self._c.scale_axis(
+                self.xmin_txt.get(), self.xmax_txt.get(),
+                self.ymin_txt.get(), self.ymax_txt.get()
                 )
-        except ValueError:
-            return
+        except tk.TclError:
+            self._c.report_error("Scale value must be a number.")
 
     def _autoscale_axis(self):
-        tup = self.c.autoscale_axis()
+        tup = self._c.autoscale_axis()
         if tup is None:
             return
         self.xmin_txt.set(tup[0])
@@ -182,13 +182,9 @@ class GraphTickMarkOptions(ttk.Frame):
     The frame containing customisation options for graph text labels.
     """
     def __init__(self, parent, controller):
-        # Initialize frame
         ttk.Frame.__init__(self, parent)
-        self.c = controller
+        self._c = controller
 
-        # Instantiate observable variables
-
-        # Create and position widgets
         self._create_widgets()
         self._position_widgets()
 

@@ -1,5 +1,8 @@
 import numpy as np
 
+from common import PlotType, DisplayUserOptions
+from model.plotfunctions.general import BasePlotFunction
+
 
 class Conversions:
     """
@@ -53,28 +56,59 @@ class GeneralProperties(object):
         self.v = Conversions.mph_to_metres(crossing_velocity)
 
 
-class Model_1(object):  
+class Model1PlotFunction(BasePlotFunction):  
     """
     A class containing model state information.
     """
-    def __init__(self,
-                 side=BridgeSide(),
-                 props=GeneralProperties(),
-                 ):
+    def __init__(self):
         """
         :param BridgeSide side: Both sides of the bridge data.
         :param GeneralProperties props: Non-side specific information.
         """
-        # Save references to the 
-        self.i = side
-        self.j = side
-        self.p = props
+        super().__init__(
+            plot_type=PlotType.MODEL_1,
+            user_option_args=DisplayUserOptions(True),
+            xvar_strings=['Car Length', 'Bridge Length'],
+            yvar_strings=['tg', 'tr'],
+            variable_to_func={
+                'Car Length': self._var_is_car_length,
+                'Bridge Length': self._var_is_bridge_length,
+                'tg': self._var_is_tg,
+                'tr': self._var_is_tr,
+                },
+            )
+
+        # Initialize params
+        self.i = BridgeSide()
+        self.j = BridgeSide()
+        self.p = GeneralProperties()
 
         # Calculate intial values of related params
         self.calc_tg(self.i)
         self.calc_tg(self.j)
 
-    def calc_tg(self, s, p=None):
+    ####################################################################
+    #                  Variable calculation functions                  #
+    ####################################################################
+
+    # TODO ALL
+    def _var_is_car_length(self, var_min, var_max, var_data):
+        return np.arange(var_min, var_max, 0.01)
+
+    def _var_is_bridge_length(self, var_min, var_max, var_data):
+        return np.arange(var_min, var_max, 0.1)
+
+    def _var_is_tg(self, var_min, var_max, var_data):
+        return var_data**2
+
+    def _var_is_tr(self, var_min, var_max, var_data):
+        return var_data**4
+
+    ####################################################################
+    #                         Model functions                          #
+    ####################################################################
+
+    def calc_tg(self, s, p=None):  #TODO
         """
         Calculates tg. Current limits are 30s < tg < 120s.
         :param BridgeSide s: The side for which to calculate tg.
