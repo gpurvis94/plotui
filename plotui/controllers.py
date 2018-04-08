@@ -2,9 +2,6 @@ from model.grapher import ModelGrapher
 
 
 class Controller(object):
-    """
-    The communication channel between the main window and the model.
-    """
     def __init__(self, view):
         self.grapher = ModelGrapher()
         self.view = view
@@ -32,16 +29,16 @@ class Controller(object):
     #                       Input data retrieval                       #
     ####################################################################
 
-    def get_plot_function_strings(self):
-        return self.grapher.get_plot_function_strings()
+    def get_functions(self):
+        return self.grapher.get_functions()
 
     def get_user_options(self, plot_type):
         return self.grapher.get_user_options(plot_type)
 
-    def get_xvar_strings(self, plot_type):
+    def get_xvars(self, plot_type):
         return self.grapher.get_xvar_strings(plot_type)
 
-    def get_yvar_strings(self, plot_type):
+    def get_yvars(self, plot_type):
         return self.grapher.get_yvar_strings(plot_type)
 
     ####################################################################
@@ -65,17 +62,10 @@ class Controller(object):
     ####################################################################
 
     def scale_axis(self, xmin, xmax, ymin, ymax):
-        """
-        Sets the graph axis limts according to predefined variables
-        """
-        # Otherwise set limits
         self.grapher.set_axes_limits(xmin, xmax, ymin, ymax)
         self.view.redraw_canvas()
 
     def autoscale_axis(self):
-        """
-        Sets the graph axis limits according to max/min data values
-        """
         self.grapher.set_axes_limits()
         self.view.redraw_canvas()
         return self.grapher.get_limits()
@@ -89,11 +79,14 @@ class Controller(object):
         if selected_index == 0:
             file_name += '.png'
             self.view.export_png(file_name)
+            self.message("Success", "Exported image.")
             
         # If export type is LaTeX data
         if selected_index == 1:
             file_name += '.dat'
             self.grapher.export_dat(file_name)
+            self.message("Success", "Exported data.")
+
 
     ####################################################################
     #                         Error reporting                          #

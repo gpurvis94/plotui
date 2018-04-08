@@ -2,10 +2,6 @@ from views.view import View
 
 
 def main():
-    """
-    The code to execute upon running the program.
-    """
-    # Initialize and load the main window
     view = View()
 
 

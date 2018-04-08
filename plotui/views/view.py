@@ -30,25 +30,31 @@ class View(tk.Tk):
         self.standard_font = Font(family="Helvetica", size=8)
         self.sub_title_font = Font(family="Helvetica", size=10, underline=1)
         self.title_font = Font(family="Helvetica", size=12, underline=1,
-                               weight='bold')
+            weight='bold')
 
         # Set universal widget properties
         self.s.configure('.', font=self.standard_font, foreground='black')
 
         # Frames
-        self.s.configure('TFrame', background='white')
-        self.s.configure('Sub.TFrame', background='white', relief=tk.GROOVE,
-                         borderwidth=1)
         self.s.configure('Main.TFrame', background='white', relief=tk.SUNKEN)
+        self.s.configure('Sub.TFrame', background='white', relief=tk.GROOVE,
+            borderwidth=1)
+        self.s.configure('TFrame', background='white')
 
         # Labels
+        self.s.configure('Title.TLabel', font=self.title_font)
+        self.s.configure('SubTitle.TLabel', font=self.sub_title_font)
         self.s.configure('TLabel', background='white')
-        self.s.configure('SubTitle.TLabel', font=self.sub_title_font,
-                         padding="2")
-        self.s.configure('Title.TLabel', font=self.title_font, padding="4")
+
+        # Entrys
+        self.s.configure('Number.TEntry')
+        self.s.configure('String.TEntry')
 
         # Checkbuttons
         self.s.configure('TCheckbutton', background='white')
+
+        # Comboboxes
+        self.s.configure('TCombobox')
 
         # Radiobuttons
         self.s.configure('TRadiobutton', background='white')

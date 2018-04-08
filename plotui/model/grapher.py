@@ -38,10 +38,10 @@ class AxesLimits(object):
         """
         Updates the limits by calculating the max/min of a given range.
         """
-        if xdata is not None:
+        if xdata is not None and len(xdata) != 0:
             self.xmin = min(xdata)
             self.xmax = max(xdata)
-        if ydata is not None:
+        if ydata is not None and len(ydata) != 0:
             self.ymin = min(ydata)
             self.ymax = max(ydata)
 
@@ -65,9 +65,6 @@ class PlotData(object):
                                               plot_args.xmax)
         self.ydata = self.plot_model.get_data(plot_args.yvar, plot_args.ymin,
                                               plot_args.ymax, self.xdata)
-        if len(self.xdata) == 0 or len(self.ydata) == 0:
-            raise ValueError
-            return
         self.limits.update_limits_from_list(self.xdata, self.ydata)
 
 
@@ -130,7 +127,7 @@ class ModelGrapher(object):
     #                       Input data retrieval                       #
     ####################################################################
 
-    def get_plot_function_strings(self):
+    def get_functions(self):
         return self._plot_function_strings
 
     def get_user_options(self, plot_type):
@@ -153,10 +150,7 @@ class ModelGrapher(object):
         # Update the plot data, remove the current line and then redraw
         if plot_args is not None:
             self._remove_line(key)
-            try:
-                self._plot_data[key].update_plot_data(plot_args)
-            except ValueError:
-                self._c.message("Error", "bad")
+            self._plot_data[key].update_plot_data(plot_args)
 
             self._calc_all_axes_limits()
             self._plot_line(key)
@@ -171,12 +165,18 @@ class ModelGrapher(object):
     def _remove_line(self, key):
         if self._plot_data[key].line is not None:
             (line,) = self._plot_data[key].line
-            line.remove()
+            if line in self._axes.lines:
+                line.remove()
 
     def _plot_line(self, key):
         """
         Plots a line to the canvas from a PlotData class.
         """
+        # If the data is None (due to input error), remove current line
+        if (len(self._plot_data[key].xdata) == 0
+                or len(self._plot_data[key].ydata) == 0):
+            return
+
         self._plot_data[key].line = self._axes.plot(
             self._plot_data[key].xdata,
             self._plot_data[key].ydata,
@@ -187,13 +187,17 @@ class ModelGrapher(object):
     ####################################################################
 
     def _calc_all_axes_limits(self):
-        x = [0]
-        y = [0]
+        x = []
+        y = []
         for key, val in self._plot_data.items():
             x.append(val.limits.xmin)
             x.append(val.limits.xmax)
             y.append(val.limits.ymin)
             y.append(val.limits.ymax)
+        if len(x) == 0:
+            x.append(0)
+        if len(y) == 0:
+            y.append(0)
         self._axes_limits.xmin = min(x)
         self._axes_limits.xmax = max(x)
         self._axes_limits.ymin = min(y)
@@ -208,12 +212,18 @@ class ModelGrapher(object):
             xmin = self._axes_limits.xmin
         if xmax is None:
             xmax = self._axes_limits.xmax
+        if xmin == xmax:
+            xmin -= 1
+            xmax += 1
         self._axes.set_xlim(xmin, xmax)
 
         if ymin is None:
             ymin = self._axes_limits.ymin
         if ymax is None:
             ymax = self._axes_limits.ymax
+        if ymin == ymax:
+            ymin -= 1
+            ymax += 1
         self._axes.set_ylim(ymin, ymax)
 
     ####################################################################

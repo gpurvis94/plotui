@@ -1,201 +1,105 @@
 import tkinter as tk
-from tkinter import ttk
 
-from views.styles import BlueButton
+import views.styles as st
 
 
-class GraphOptionsFrame(ttk.Frame):
+class GraphOptionsFrame(st.SubFrame):
     """
-    The visual design for the Plot element.
+    The visual design for the graph options frame.
     """
-    def __init__(self, parent, controller):
-        # Initialize frame
-        ttk.Frame.__init__(self, parent, style='Sub.TFrame', border=5)
-        self._c = controller
-
-        self._create_widgets()
-        self._position_widgets()
-
     def _create_widgets(self):
-        # Instantiate nested widgets
-        self.main_title_lbl = ttk.Label(self, text="Graph Options",
-                                style='Title.TLabel')
-        self.graph_label_options = GraphLabelOptionsFrame(self, self._c)
-        self.graph_scaling_options = GraphScalingOptionsFrame(self, self._c)
-        self.graph_tick_mark_options = GraphTickMarkOptions(self, self._c)
+        self._title_lbl = st.TitleLabel(self, "Graph Options")
+        self._graph_label_options = GraphLabelOptionsFrame(self, self._c)
+        self._graph_scaling_options = GraphScalingOptionsFrame(self, self._c)
+        self._graph_tick_mark_options = GraphTickMarkOptions(self, self._c)
 
     def _position_widgets(self):
-        # Position nested widgets
-        self.main_title_lbl.grid(row=0, column=0, columnspan=1)
-        self.graph_label_options.grid(row=1, column=0, sticky="we")
-        self.graph_scaling_options.grid(row=2, column=0, sticky="we")
-        self.graph_tick_mark_options.grid(row=3, column=0, sticky="we")
+        self._title_lbl.grid(row=0)
+        self._graph_label_options.grid(row=1, sticky="we")
+        self._graph_scaling_options.grid(row=2, sticky="we")
+        self._graph_tick_mark_options.grid(row=3, sticky="we")
 
-        # Configure rows and columns
-        self.grid_columnconfigure(0, pad=5)
+    def _configure_grid(self):
+        self.grid_columnconfigure(0, weight=1)
 
 
-class GraphLabelOptionsFrame(ttk.Frame):
+class GraphLabelOptionsFrame(st.SubSubFrame):
+    """
+    The frame containing customisation options for the artist labels.
+    """
+    def _create_widgets(self):
+        self._title_lbl = st.SubTitleLabel(self, "Label options")
+        self._title_btn = st.Button(self, "Add title", self.set_title)
+        self._xlabel_btn = st.Button(self, "Add x-axis label", self.set_xlabel)
+        self._ylabel_btn = st.Button(self, "Add y-axis label", self.set_ylabel)
+        self._title_entry = st.StringEntry(self, "Title")
+        self._xlabel_entry = st.StringEntry(self, "x axis")
+        self._ylabel_entry = st.StringEntry(self, "y axis")
+
+    def _position_widgets(self):
+        self._title_lbl.grid(row=1, column=0, columnspan=2, sticky='w')
+        self._title_btn.grid(row=2, column=0, sticky="w")
+        self._xlabel_btn.grid(row=3, column=0, sticky="w")
+        self._ylabel_btn.grid(row=4, column=0, sticky="w")
+        self._title_entry.grid(row=2, column=1, sticky="w")
+        self._xlabel_entry.grid(row=3, column=1, sticky="w")
+        self._ylabel_entry.grid(row=4, column=1, sticky="w")
+
+    def set_title(self):
+        self._c.set_title(self._title_entry.get())
+
+    def set_xlabel(self):
+        self._c.set_xlabel(self._xlabel_entry.get())
+
+    def set_ylabel(self):
+        self._c.set_ylabel(self._ylabel_entry.get())
+
+
+class GraphScalingOptionsFrame(st.SubSubFrame):
     """
     The frame containing customisation options for graph text labels.
     """
-    def __init__(self, parent, controller):
-        # Initialize frame
-        ttk.Frame.__init__(self, parent)
-        self._c = controller
-
-        # Instantiate observable variables
-        self.title_txt = tk.StringVar(value="Title")
-        self.xlabel_txt = tk.StringVar(value="x axis")
-        self.ylabel_txt = tk.StringVar(value="y axis")
-
-        # Create and position widgets
-        self._create_widgets()
-        self._position_widgets()
-
     def _create_widgets(self):
-        # Instantiate nested widgets
-        self.main_title_lbl = ttk.Label(self, text="Label options",
-                                style='SubTitle.TLabel')
-
-        # Buttons
-        self.title_btn = BlueButton(
-            master=self, text="Add title",
-            command=lambda: self._c.set_title(self.title_txt.get()),
-            )
-        self.x_label_btn = BlueButton(
-            master=self, text="Add x-axis label",
-            command=lambda: self._c.set_xlabel(self.xlabel_txt.get()),
-            )
-        self.y_label_btn = BlueButton(
-            master=self, text="Add y-axis label",
-            command=lambda: self._c.set_ylabel(self.ylabel_txt.get()),
-            )
-
-        # Entrys
-        self.title_entry = ttk.Entry(self, textvariable=self.title_txt)
-        self.x_label_entry = ttk.Entry(self, textvariable=self.xlabel_txt)
-        self.y_label_entry = ttk.Entry(self, textvariable=self.ylabel_txt)
+        self._title_lbl = st.SubTitleLabel(self, "Scaling options")
+        self._xmin_le = st.FloatLabEnt(self, "X-axis min:", 0.0)
+        self._xmax_le = st.FloatLabEnt(self, 'X-axis max:', 1.0)
+        self._ymin_le = st.FloatLabEnt(self, 'Y-axis min:', 0.0)
+        self._ymax_le = st.FloatLabEnt(self, 'Y-axis max:', 1.0)
+        self._scale_btn = st.Button(self, "Scale", self.scale)
+        self._autoscale_btn = st.Button(self, "Autoscale", self.autoscale)
 
     def _position_widgets(self):
-        # Position nested widgets
-        self.main_title_lbl.grid(row=1, column=0, columnspan=2, sticky='w')
+        self._title_lbl.grid(row=0, column=0, columnspan=4, sticky='w')
+        self._xmin_le.grid(row=1, column=0, sticky='w')
+        self._xmax_le.grid(row=1, column=1, sticky='w')
+        self._ymin_le.grid(row=2, column=0, sticky='w')
+        self._ymax_le.grid(row=2, column=1, sticky='w')
+        self._scale_btn.grid(row=3, column=0)
+        self._autoscale_btn.grid(row=3, column=1)
 
-        self.title_btn.grid(row=2, column=0, sticky="w", pady=2)
-        self.x_label_btn.grid(row=3, column=0, sticky="w", pady=2)
-        self.y_label_btn.grid(row=4, column=0, sticky="w", pady=2)
-
-        self.title_entry.grid(row=2, column=1, sticky="w", pady=2)
-        self.x_label_entry.grid(row=3, column=1, sticky="w", pady=2)
-        self.y_label_entry.grid(row=4, column=1, sticky="w", pady=2)
-
-        # Configure rows and columns
-        self.grid_columnconfigure(0, pad=5)
-
-
-class GraphScalingOptionsFrame(ttk.Frame):
-    """
-    The frame containing customisation options for graph text labels.
-    """
-    def __init__(self, parent, controller):
-        # Initialize frame
-        ttk.Frame.__init__(self, parent)
-        self._c = controller
-
-        # Instantiate observable variables
-        self.xmin_txt = tk.DoubleVar(value=0.0)
-        self.xmax_txt = tk.DoubleVar(value=1.0)
-        self.ymin_txt = tk.DoubleVar(value=0.0)
-        self.ymax_txt = tk.DoubleVar(value=1.0)
-
-        # Create and position widgets
-        self._create_widgets()
-        self._position_widgets()
-
-    def _create_widgets(self):
-        # Instantiate nested widgets
-        self.main_title_lbl = ttk.Label(self, text="Scaling options",
-                                style='SubTitle.TLabel')
-
-        self.xmin_lbl = ttk.Label(master=self, text='X-axis min')
-        self.xmax_lbl = ttk.Label(master=self, text=' X-axis max')
-        self.ymin_lbl = ttk.Label(master=self, text='Y-axis min')
-        self.ymax_lbl = ttk.Label(master=self, text=' Y-axis max')
-
-        self.xmin_entry = ttk.Entry(master=self, width=10,
-                                    textvariable=self.xmin_txt)
-        self.xmax_entry = ttk.Entry(master=self, width=10,
-                                    textvariable=self.xmax_txt)
-        self.ymin_entry = ttk.Entry(master=self, width=10,
-                                    textvariable=self.ymin_txt)
-        self.ymax_entry = ttk.Entry(master=self, width=10,
-                                    textvariable=self.ymax_txt)
-
-        self.scale_btn = BlueButton(master=self, text="Scale",
-                                    command=self._scale_axis)
-        self.autoscale_btn = BlueButton(master=self, text="Autoscale",
-                                        command=self._autoscale_axis)
-
-    def _position_widgets(self):
-        # Position nested widgets
-        self.main_title_lbl.grid(row=0, column=0, columnspan=4, sticky='w')
-
-        # Row 1
-        self.xmin_lbl.grid(row=1, column=0, sticky='w')
-        self.xmin_entry.grid(row=1, column=1, sticky='w', pady=2)
-        self.xmax_lbl.grid(row=1, column=2, sticky='w')
-        self.xmax_entry.grid(row=1, column=3, sticky='w', pady=2)
-        
-        # Row 2
-        self.ymin_lbl.grid(row=2, column=0, sticky='w')
-        self.ymin_entry.grid(row=2, column=1, sticky='w', pady=2)
-        self.ymax_lbl.grid(row=2, column=2, sticky='w')
-        self.ymax_entry.grid(row=2, column=3, sticky='w', pady=2)
-
-        # Row 3
-        self.scale_btn.grid(row=3, column=0, columnspan=2, pady=2)
-        self.autoscale_btn.grid(row=3, column=2, columnspan=2, pady=2)
-
-    # Axis scaling methods
-
-    def _scale_axis(self):
+    def scale(self):
         try:
-            self._c.scale_axis(
-                self.xmin_txt.get(), self.xmax_txt.get(),
-                self.ymin_txt.get(), self.ymax_txt.get()
-                )
+            self._c.scale_axis(self._xmin_le.get(), self._xmax_le.get(),
+                self._ymin_le.get(), self._ymax_le.get())
         except tk.TclError:
             self._c.message("Error", "Scale value must be a number.")
 
-    def _autoscale_axis(self):
+    def autoscale(self):
         tup = self._c.autoscale_axis()
         if tup is None:
             return
-        self.xmin_txt.set(tup[0])
-        self.xmax_txt.set(tup[1])
-        self.ymin_txt.set(tup[2])
-        self.ymax_txt.set(tup[3])
+        self._xmin_le.set(tup[0])
+        self._xmax_le.set(tup[1])
+        self._ymin_le.set(tup[2])
+        self._ymax_le.set(tup[3])
 
 
-class GraphTickMarkOptions(ttk.Frame):
+class GraphTickMarkOptions(st.SubSubFrame):
     """
     The frame containing customisation options for graph text labels.
     """
-    def __init__(self, parent, controller):
-        ttk.Frame.__init__(self, parent)
-        self._c = controller
-
-        self._create_widgets()
-        self._position_widgets()
-
     def _create_widgets(self):
-        # Instantiate nested widgets
-        self.main_title_lbl = ttk.Label(self, text="Tick mark options",
-                                style='SubTitle.TLabel')
-
+        self._title_lbl = st.SubTitleLabel(self, "Tick mark options")
 
     def _position_widgets(self):
-        # Position nested widgets
-        self.main_title_lbl.grid(row=0, column=0, columnspan=1, sticky='w')
-
-        # Configure rows and columns
+        self._title_lbl.grid(row=0, column=0, sticky='w')
