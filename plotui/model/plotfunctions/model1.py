@@ -10,110 +10,146 @@ class Conversions:
     """
     @staticmethod
     def mph_to_metres(value):
-        """
-        Converts a miles per hour value into a metres per second value.
-        :param float value: The miles per hour value to be converted.
-        :return float: The converted value.
-        """
         return value*1609.34/3600
+
+
+class GeneralProperties(object):
+    """
+    Properties shared by both sides of the bridge.
+    """
+    def __init__(self):
+        self.restore_defaults()
+
+    def restore_defaults(self):
+        self.init_constants()
+        self.calc_variables()
+
+    def init_constants(self):
+        self.L = 20.0
+        self.l = 4.5
+        self.s = 2.0
+        self.v = Conversions.mph_to_metres(20.0)
+        self.r = 5
+
+    def calc_variables(self):
+        self.h0 = self.calc_h0()
+        self.trij = self.calc_trij()
+
+    def calc_h0(self):
+        return ((self.l + self.s)/self.v)
+
+    def calc_trij(self):
+        return ((self.L + self.l)/self.v) + self.r
 
 
 class BridgeSide(object):
     """
     A class detailing the properties of a single side of a bridge.
     """
-    def __init__(self,
-                 arrival_rate=10,
-                 initial_queue=10,
-                 ):
-        self.Q = arrival_rate
-        self.n_i = initial_queue
-        self.tg = None
-        self.tr = None
+    def __init__(self, general_properties):
+        self.p = general_properties
+        self.restore_defaults()
 
+    def restore_defaults(self):
+        self.init_constants()
+        self.calc_variables()
 
-class GeneralProperties(object):
-    """
-    A class detailing the general properties pertaining to the bridge
-    and both sides of the bridge.
-    """
-    def __init__(self,
-                 bridge_length=20.0,
-                 car_length=4.5,
-                 separation_distance=2.0,
-                 crossing_velocity=20.0,
-                 ):
-        """
-        Sets the values. Default values will be used if not listed.
-        :param float bridge_length: The length of the bridge, metres.
-        :param float car_length: The length of an average car, metres.
-        :param float separation_distance: Distance between cars, metres.
-        :param float crossing_velocity: Crossing velocity, miles ph.
-        """
-        self.L = bridge_length
-        self.l = car_length
-        self.s = separation_distance
-        self.v = Conversions.mph_to_metres(crossing_velocity)
+    def init_constants(self):
+        self.Q = 10
+        self.n_i = 10
+
+    def calc_variables(self):
+        self.tg = self.calc_tg()
+        self.tw = self.calc_tw()
+
+    def calc_tg(self):
+        return np.log(self.n_i) + (self.p.h0 *(self.n_i - 1))
+
+    def calc_tw(self):
+        return (2*self.p.trij) + self.tg
 
 
 class Model1PlotFunction(BasePlotFunction):  
     """
     A class containing model state information.
     """
-    def __init__(self):
-        """
-        :param BridgeSide side: Both sides of the bridge data.
-        :param GeneralProperties props: Non-side specific information.
-        """
-        super().__init__(
-            plot_type=PlotType.MODEL_1,
-            user_option_args=DisplayUserOptions(True),
-            xvar_strings=['Car Length', 'Bridge Length'],
-            yvar_strings=['tg', 'tr'],
-            variable_to_func={
-                'Car Length': self._var_is_car_length,
-                'Bridge Length': self._var_is_bridge_length,
-                'tg': self._var_is_tg,
-                'tr': self._var_is_tr,
-                },
-            )
+    def _init_grapher_data(self):
+        self.plot_type = PlotType.MODEL_1
+        self.plot_type_string = PlotType.to_string(self.plot_type)
+        self.user_option_args = DisplayUserOptions(True)
+        self.xvar_strings = [
+            'Bridge length', 'Car length', 'Car separation',
+            'Crossing velocity', 'Safety factor',
+            ]
+        self.yvar_strings = [
+            'trij', 'tg', 'tw',
+            ]
+        self._variable_to_func = {
+            'Bridge length': self._var_is_bridge_length,
+            'Car length': self._var_is_car_length,
+            'Car separation': self._var_is_car_separation,
+            'Crossing velocity': self._var_is_crossing_velocity,
+            'Safety factor': self._var_is_safety_factor,
+            'tg': self._var_is_tg,
+            'trij': self._var_is_trij,
+            'tw': self._var_is_tw,
+            }
 
-        # Initialize params
-        self.i = BridgeSide()
-        self.j = BridgeSide()
+    def _init_model_data(self):
         self.p = GeneralProperties()
+        self.i = BridgeSide(self.p)
+        self.j = BridgeSide(self.p)
 
-        # Calculate intial values of related params
-        self.calc_tg(self.i)
-        self.calc_tg(self.j)
+    def restore_defaults(self):
+        self.p.restore_defaults()
+        self.i.restore_defaults()
+        self.j.restore_defaults()
+
+    def calc_all_variables(self):
+        self.p.calc_variables()
+        self.i.calc_variables()
+        self.j.calc_variables()
 
     ####################################################################
-    #                  Variable calculation functions                  #
+    #                Independant variable calculations                 #
     ####################################################################
-
-    # TODO ALL
-    def _var_is_car_length(self, var_min, var_max, var_data):
-        return np.arange(var_min, var_max, 0.01)
 
     def _var_is_bridge_length(self, var_min, var_max, var_data):
-        return np.arange(var_min, var_max, 0.1)
+        self.p.L = np.arange(var_min, var_max + 0.01, 0.01)
+        return self.p.L
+
+    def _var_is_car_length(self, var_min, var_max, var_data):
+        self.p.l = np.arange(var_min, var_max + 0.01, 0.01)
+        return self.p.l
+
+    def _var_is_car_separation(self, var_min, var_max, var_data):
+        self.p.s = np.arange(var_min, var_max + 0.01, 0.01)
+        return self.p.s
+
+    def _var_is_crossing_velocity(self, var_min, var_max, var_data):
+        self.p.v = np.arange(var_min, var_max + 0.01, 0.01)
+        return self.p.v
+
+    def _var_is_safety_factor(self, var_min, var_max, var_data):
+        self.p.r = np.arange(var_min, var_max + 0.01, 0.01)
+        return self.p.r
+
+    ####################################################################
+    #                 Dependant variable calculations                  #
+    ####################################################################
 
     def _var_is_tg(self, var_min, var_max, var_data):
-        return var_data**2
+        self.calc_all_variables()
+        return self.i.tg
 
-    def _var_is_tr(self, var_min, var_max, var_data):
-        return var_data**4
+    def _var_is_trij(self, var_min, var_max, var_data):
+        self.calc_all_variables()
+        return self.p.trij
+
+    def _var_is_tw(self, var_min, var_max, var_data):
+        self.calc_all_variables()
+        return self.i.tw
 
     ####################################################################
     #                         Model functions                          #
     ####################################################################
-
-    def calc_tg(self, s, p=None):  #TODO
-        """
-        Calculates tg. Current limits are 30s < tg < 120s.
-        :param BridgeSide s: The side for which to calculate tg.
-        :param GeneralProperties p: The general data properties to use.
-        """
-        if p is None:
-            p = self.p
-        s.tg = np.log(s.n_i) + ((p.l + p.s)/p.v)*(s.n_i - 1)

@@ -1,5 +1,4 @@
 from tkinter import messagebox
-from tkinter import ttk
 
 from controllers import Controller
 import views.styles as st

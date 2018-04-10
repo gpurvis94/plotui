@@ -8,7 +8,7 @@ class GraphOptionsFrame(st.SubFrame):
     The visual design for the graph options frame.
     """
     def _create_widgets(self):
-        self._title_lbl = st.TitleLabel(self, "Graph Options")
+        self._title_lbl = st.TitleLabel(self, "Graph options")
         self._graph_label_options = GraphLabelOptionsFrame(self, self._c)
         self._graph_scaling_options = GraphScalingOptionsFrame(self, self._c)
         self._graph_tick_mark_options = GraphTickMarkOptions(self, self._c)

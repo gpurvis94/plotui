@@ -10,17 +10,13 @@ class View(tk.Tk):
     The root level element.
     """
     def __init__(self):
-        # Initialise the base level element
         super().__init__()
 
-        # Create styles
         self._create_styles()
 
-        # Instantiate and grid the main frame
         self.main_frame = MainWindowFrame(self)
         self.main_frame.grid()
 
-        # Enter the event loop
         self.mainloop()
 
     def _create_styles(self):

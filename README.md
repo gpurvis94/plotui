@@ -29,5 +29,7 @@ Run the program with the file "PlotUI/plotui/main.py" OR from the shell by typin
 - **[Range]** : Defines the range over which to plot a given variable.
 ### Plot Types
 The following plot types can be plotted.
-- **Straight Line**: Plots a straight line to the graph over the specified ranges.
-- **Model 1**: TODO
+- **Straight Line**
+  - Plots a straight line to the graph over the specified ranges.
+- **Model 1**
+  - Implemented most of the dependant/independant variables, still some TODO.

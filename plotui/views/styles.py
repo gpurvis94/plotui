@@ -19,6 +19,7 @@ class BaseFrame(ttk.Frame):
         self._init_variables()
         self._create_widgets()
         self._position_widgets()
+        self._create_optional_widgets()
         self._pad_columns()
         self._pad_rows()
         self._configure_grid()
@@ -30,6 +31,9 @@ class BaseFrame(ttk.Frame):
         pass
 
     def _position_widgets(self):
+        pass
+
+    def _create_optional_widgets(self):
         pass
 
     def _pad_columns(self, padding=5):
@@ -131,7 +135,7 @@ class StringEntry(BaseObservableEntry):
 #                           Labelled Entrys                            #
 ########################################################################
 
-class BaseObservableLabEnt(BaseFrame):
+class BaseObservableLabEnt(ttk.Frame):
     """
     A frame defining the properties of an observable labelled entry.
     """
@@ -158,6 +162,35 @@ class FloatLabEnt(BaseObservableLabEnt):
 class StringLabEnt(BaseObservableLabEnt):
     """
     Defines the properties of an observable labelled entry for strings.
+    """
+    def __init__(self, parent, text, initial_var):
+        super().__init__(parent, text, initial_var, StringEntry)
+
+########################################################################
+#                          Checkbutton Entrys                          #
+########################################################################
+
+class BaseObservableChkEnt(ttk.Frame):
+    """
+    A frame defining the properties of an entry with a checkbox.
+    """
+    def __init__(self, parent, text, initial_var, EntryClass):
+        ttk.Frame.__init__(self, parent, style='TFrame')
+        self.check = BoolCheck(self, text)
+        self.entry = EntryClass(self, initial_var)
+        self.check.grid(row=0, column=0)
+        self.entry.grid(row=0, column=1)
+
+    def get_check(self):
+        return self.check.get()
+
+    def get_entry(self):
+        return self.entry.get()
+
+
+class StringChkEnt(BaseObservableChkEnt):
+    """
+    Defines the properties of an observable check entry for strings.
     """
     def __init__(self, parent, text, initial_var):
         super().__init__(parent, text, initial_var, StringEntry)
@@ -222,7 +255,7 @@ class StringCombo(BaseObservableCombobox):
 #                             Radiobuttons                             #
 ########################################################################
 
-class Radiobuttons(BaseFrame):
+class Radiobuttons(ttk.Frame):
     """
     A frame defining the appearance of a series of radiobuttons.
     """

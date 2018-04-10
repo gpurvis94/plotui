@@ -59,17 +59,15 @@ class PlotDataFrame(st.SubSubFrame):
 
     def _create_widgets(self):
         self._type_lbl = st.Label(self, f'Plot type: "{self._type_string}"')
-        self._legend_chk = st.BoolCheck(self, "Legend:")
-        self._legend_entry = st.StringEntry(self, self._type_string)
+        # self._legend_ce = st.StringChkEnt(self, "Legend:", self._type_string)
         self._data_options = DataOptionsFrame(self, self._c, self.plot_type)
         self._actions = PlotActionsFrame(self, self._c)
 
     def _position_widgets(self):
         self._type_lbl.grid(row=0, column=0)
-        self._legend_chk.grid(row=0, column=1)
-        self._legend_entry.grid(row=0, column=2)
-        self._data_options.grid(row=0, column=3)
-        self._actions.grid(row=1, column=1, columnspan=3, sticky='w')
+        self._data_options.grid(row=0, column=1, sticky='w')
+        # self._legend_ce.grid(row=1, column=1, sticky='w') 
+        self._actions.grid(row=2, column=1, sticky='w')
 
     def get_xvar(self):
         return self._data_options.xvar_cmb.get()
@@ -102,8 +100,6 @@ class DataOptionsFrame(st.SubSubFrame):
     def __init__(self, parent, controller, plot_type):
         self._type = plot_type
         super().__init__(parent, controller)
-
-        self._create_optional_widgets()
 
     def _create_widgets(self):
         self._xvar_lbl = st.Label(self, 'X variable:')

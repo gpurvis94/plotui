@@ -61,6 +61,7 @@ class PlotData(object):
         """
         Calculates data using methods on the plot_model
         """
+        self.plot_model.restore_defaults()
         self.xdata = self.plot_model.get_data(plot_args.xvar, plot_args.xmin,
                                               plot_args.xmax)
         self.ydata = self.plot_model.get_data(plot_args.yvar, plot_args.ymin,
@@ -83,10 +84,8 @@ class ModelGrapher(object):
             PlotType.MODEL_1: Model1PlotFunction,
         }
 
-        # Set default titles and descriptions TODO move
-        self._axes.set_title("Title")
-        self._axes.set_xlabel("x axis")
-        self._axes.set_ylabel("y axis")
+        # Set default titles and descriptions
+        self._axes.set(title='Title', xlabel='x axis', ylabel='y axis')
 
     def _load_plot_functions(self):
         self._plot_functions = {}
