@@ -62,9 +62,9 @@ class PlotData(object):
         Calculates data using methods on the plot_model
         """
         self.plot_model.restore_defaults()
-        self.xdata = self.plot_model.get_data(plot_args.xvar, plot_args.xmin,
+        self.xdata = self.plot_model.get_xdata(plot_args.xvar, plot_args.xmin,
                                               plot_args.xmax)
-        self.ydata = self.plot_model.get_data(plot_args.yvar, plot_args.ymin,
+        self.ydata = self.plot_model.get_ydata(plot_args.yvar, plot_args.ymin,
                                               plot_args.ymax, self.xdata)
         self.limits.update_limits_from_list(self.xdata, self.ydata)
 
@@ -137,6 +137,20 @@ class ModelGrapher(object):
 
     def get_yvar_strings(self, plot_type):
         return self._plot_functions[plot_type].yvar_strings
+
+
+    ####################################################################
+    #                         Constant methods                         #
+    ####################################################################
+
+    def get_constant_strings(self, plot_type):
+        return self._plot_functions[plot_type].constant_strings
+
+    def get_constant_vals(self, key):
+        return self._plot_data[key].plot_model.get_constant_vals()
+
+    def set_constant_vals(self, key, vals):
+        return self._plot_data[key].plot_model.set_constant_vals(vals)
 
     ####################################################################
     #                             Plotting                             #
@@ -232,6 +246,7 @@ class ModelGrapher(object):
     def export_dat(self, file_name):
         f = open(file_name, "w+")
         f.write("x y\n")
+
         for key, val in self._plot_data.items():
             for i, x in enumerate(val.xdata):
                 f.write(f'{x} {val.ydata[i]}\n')

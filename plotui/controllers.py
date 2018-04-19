@@ -42,6 +42,22 @@ class Controller(object):
         return self.grapher.get_yvar_strings(plot_type)
 
     ####################################################################
+    #                        Editing constants                         #
+    ####################################################################
+
+    def set_const(self, key, plot_type):
+        self.view.init_set_constants_window(key, plot_type)
+
+    def get_constant_strings(self, plot_type):
+        return self.grapher.get_constant_strings(plot_type)
+
+    def get_constant_vals(self, key):
+        return self.grapher.get_constant_vals(key)
+
+    def save_entry_vals(self, key, vals):
+        self.grapher.set_constant_vals(key, vals)
+
+    ####################################################################
     #                             Plotting                             #
     ####################################################################
 

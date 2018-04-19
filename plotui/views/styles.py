@@ -204,7 +204,7 @@ class Button(tk.Button):
     """
     Defines the looks of the standard button
     """
-    def __init__(self, master, text, command):
+    def __init__(self, master, text, command=None):
         super().__init__(master=master, text=text, command=command,
             font="Helvetica 8 bold", bg='#1874CD', fg='white',
             activebackground='#104E8B', bd=2, highlightthickness=0)

@@ -45,6 +45,7 @@ class DisplayUserOptions(object):
     """
     Defines which data option widgets to display.
     """
-    def __init__(self, show_xrange=False, show_yrange=False):
+    def __init__(self, show_xrange=False, show_yrange=False, show_set_constants=False):
         self.show_xrange = show_xrange
         self.show_yrange = show_yrange
+        self.show_set_constants = show_set_constants

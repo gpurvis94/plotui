@@ -17,7 +17,9 @@ class BasePlotFunction(object):
         self.user_option_args
         self.xvar_strings
         self.yvar_strings
-        self._variable_to_func
+        self.constant_strings = []
+        self._x_var_to_func
+        self._y_var_to_func
 
     def _init_model_data(self):
         pass
@@ -25,11 +27,11 @@ class BasePlotFunction(object):
     def restore_defaults(self):
         pass
 
-    def get_data(self, var, var_min=None, var_max=None, var_data=None):
-        """
-        Maps user specified plot args to the appropriate function.
-        """
-        return self._variable_to_func[var](var_min, var_max, var_data)
+    def get_xdata(self, var, var_min=None, var_max=None, var_data=None):
+        return self._x_var_to_func[var](var_min, var_max, var_data)
+
+    def get_ydata(self, var, var_min=None, var_max=None, var_data=None):
+        return self._y_var_to_func[var](var_min, var_max, var_data)
 
 
 class StraightLinePlotFunction(BasePlotFunction):
@@ -39,11 +41,14 @@ class StraightLinePlotFunction(BasePlotFunction):
     def _init_grapher_data(self):
         self.plot_type = PlotType.STRAIGHT_LINE
         self.plot_type_string = PlotType.to_string(self.plot_type)
-        self.user_option_args = DisplayUserOptions(True, True)
+        self.user_option_args = DisplayUserOptions(show_xrange=True,
+            show_yrange=True)
         self.xvar_strings = ['x']
         self.yvar_strings =  ['y']
-        self._variable_to_func = {
+        self._x_var_to_func = {
             'x': self._var_is_x,
+            }
+        self._y_var_to_func = {
             'y': self._var_is_y,
             }
 

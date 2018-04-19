@@ -5,7 +5,7 @@ import views.styles as st
 from common import PlotType, PlotArgs
 
 
-class PlotOptionsFrame(st.SubFrame):
+class MainPlotOptionsFrame(st.SubFrame):
     """
     The visual design for the Plot element.
     """
@@ -31,7 +31,7 @@ class PlotOptionsFrame(st.SubFrame):
         plot = PlotDataFrame(self, self._c,
             PlotType.str_to_plottype(self._type_cmb.get()))
         self._plots[plot.key] = plot
-        self._c.add_plot(plot.key, plot.plot_type)
+        self._c.add_plot(plot.key, plot._type)
         plot.grid(sticky='w', columnspan=2, pady=2)
 
     def get_plot_args(self, key):
@@ -45,62 +45,62 @@ class PlotOptionsFrame(st.SubFrame):
             self._c.message("Error", "Range values must be a number.")
 
 
-class PlotDataFrame(st.SubSubFrame):
+class PlotOptionsFrame(st.SubSubFrame):
+    def __init__(self, parent, controller, plot_type, display_args=None):
+        self._type = plot_type
+        self._type_string = PlotType.to_string(self._type)
+        if display_args is None:
+            display_args = controller.get_user_options(self._type)
+        self._display_args = display_args
+        super().__init__(parent, controller)
+
+
+class PlotDataFrame(PlotOptionsFrame):
     """
     The base class from which to inherit functionality
     """
-    def __init__(self, parent, controller, plot_type):
-        self.plot_type = plot_type
-        super().__init__(parent, controller)
-
     def _init_variables(self):
-        self._type_string = PlotType.to_string(self.plot_type)
         self.key = str(uuid.uuid4())
 
     def _create_widgets(self):
         self._type_lbl = st.Label(self, f'Plot type: "{self._type_string}"')
-        # self._legend_ce = st.StringChkEnt(self, "Legend:", self._type_string)
-        self._data_options = DataOptionsFrame(self, self._c, self.plot_type)
-        self._actions = PlotActionsFrame(self, self._c)
+        self._data_options = DataOptionsFrame(self, self._c, self._type)
+        self._actions = PlotActionsFrame(self, self._c, self._type)
 
     def _position_widgets(self):
         self._type_lbl.grid(row=0, column=0)
         self._data_options.grid(row=0, column=1, sticky='w')
-        # self._legend_ce.grid(row=1, column=1, sticky='w') 
-        self._actions.grid(row=2, column=1, sticky='w')
+        self._actions.grid(row=1, column=0, columnspan=2, sticky='w')
 
     def get_xvar(self):
         return self._data_options.xvar_cmb.get()
 
     def get_xmin(self):
-        if self._data_options.display_user_optionns.show_xrange:
+        if self._display_args.show_xrange:
             return self._data_options.xrange.min_entry.get()
 
     def get_xmax(self):
-        if self._data_options.display_user_optionns.show_xrange:
+        if self._display_args.show_xrange:
             return self._data_options.xrange.max_entry.get()
 
     def get_yvar(self):
         return self._data_options.yvar_cmb.get()
 
     def get_ymin(self):
-        if self._data_options.display_user_optionns.show_yrange:
+        if self._display_args.show_yrange:
             return self._data_options.yrange.min_entry.get()
 
     def get_ymax(self):
-        if self._data_options.display_user_optionns.show_yrange:
+        if self._display_args.show_yrange:
             return self._data_options.yrange.max_entry.get()
 
-class DataOptionsFrame(st.SubSubFrame):
+
+class DataOptionsFrame(PlotOptionsFrame):
     """
     A frame which holds widgets that the user interacts with to set
     data options. The model is responsible for determining which options
     are gridded.
     """
-    def __init__(self, parent, controller, plot_type):
-        self._type = plot_type
-        super().__init__(parent, controller)
-
     def _create_widgets(self):
         self._xvar_lbl = st.Label(self, 'X variable:')
         self.xvar_cmb = st.StringCombo(self, self._c.get_xvars(self._type))
@@ -114,13 +114,11 @@ class DataOptionsFrame(st.SubSubFrame):
         self.yvar_cmb.grid(row=0, column=4, sticky='w')
 
     def _create_optional_widgets(self):
-        self.display_user_optionns = self._c.get_user_options(self._type)
-
-        if self.display_user_optionns.show_xrange:
+        if self._display_args.show_xrange:
             self.xrange = PlotRangeFrame(self, self._c)
             self.xrange.grid(row=0, column=2, sticky='w')
 
-        if self.display_user_optionns.show_yrange:
+        if self._display_args.show_yrange:
             self.yrange = PlotRangeFrame(self, self._c)
             self.yrange.grid(row=0, column=5)
 
@@ -145,20 +143,26 @@ class PlotRangeFrame(st.SubSubFrame):
         pass
 
 
-class PlotActionsFrame(st.SubSubFrame):
+class PlotActionsFrame(PlotOptionsFrame):
     """
     A widget that contains the buttons that allow the user to show,
     update, or delete a plot.
     """
     def _create_widgets(self):
-        self._show_plot_chk = st.BoolCheck(self, "Show plot:", True)
         self._update_btn = st.Button(self, "Redraw plot", self.update_plot)
         self._remove_btn = st.Button(self, "Remove plot", self.delete_plot)
 
     def _position_widgets(self):
-        self._show_plot_chk.grid(row=0, column=0)
         self._update_btn.grid(row=0, column=1)
         self._remove_btn.grid(row=0, column=2)
+        
+    def _create_optional_widgets(self):
+        if self._display_args.show_set_constants is True:
+            self._const_btn = st.Button(self, "Set constants", self.set_const)
+            self._const_btn.grid(row=0, column=0)
+
+    def set_const(self):
+        self._c.set_const(self._parent.key, self._type)
 
     def update_plot(self):
         self._c.update_plot(self._parent.key)
