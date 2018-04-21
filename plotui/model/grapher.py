@@ -8,6 +8,7 @@ matplotlib.use('TkAgg')
 from common import PlotType
 from model.plotfunctions.general import StraightLinePlotFunction
 from model.plotfunctions.model1 import Model1PlotFunction
+from model.plotfunctions.model2 import Model2PlotFunction
 
 
 class AxesLimits(object):
@@ -82,6 +83,7 @@ class ModelGrapher(object):
         self._type_to_model = {
             PlotType.STRAIGHT_LINE: StraightLinePlotFunction,
             PlotType.MODEL_1: Model1PlotFunction,
+            PlotType.MODEL_2: Model2PlotFunction,
         }
 
         # Set default titles and descriptions
@@ -92,9 +94,11 @@ class ModelGrapher(object):
 
         straight_line = StraightLinePlotFunction()
         model1 = Model1PlotFunction()
+        model2 = Model2PlotFunction()
 
         self._plot_functions[straight_line.plot_type] = straight_line
         self._plot_functions[model1.plot_type] = model1
+        self._plot_functions[model2.plot_type] = model2
 
         self._plot_function_strings = []
         for key, val in self._plot_functions.items():
@@ -245,11 +249,14 @@ class ModelGrapher(object):
 
     def export_dat(self, file_name):
         f = open(file_name, "w+")
-        f.write("x y\n")
+        pd_list = []
+        pd_list.append(list(self._plot_data.values())[0].xdata)
 
         for key, val in self._plot_data.items():
-            for i, x in enumerate(val.xdata):
-                f.write(f'{x} {val.ydata[i]}\n')
-            f.write("\n")
-        f.close()
+            pd_list.append(val.ydata)
 
+        for y in zip(*pd_list):
+            for i in y:
+                f.write(f'{i} ')
+            f.write('\n')
+        f.close()

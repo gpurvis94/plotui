@@ -4,6 +4,7 @@ from enum import Enum, auto
 class PlotType(Enum):
     STRAIGHT_LINE = auto()
     MODEL_1 = auto()
+    MODEL_2 = auto()
 
     @staticmethod
     def to_string(plot_type):
@@ -19,11 +20,13 @@ class PlotType(Enum):
 _plottype_to_str = {
     PlotType.STRAIGHT_LINE: 'Straight line',
     PlotType.MODEL_1: 'Model 1',
+    PlotType.MODEL_2: 'Model 2',
 }
 
 _str_to_plottype = {
     'Straight line': PlotType.STRAIGHT_LINE,
     'Model 1': PlotType.MODEL_1,
+    'Model 2': PlotType.MODEL_2,
 }
 
 

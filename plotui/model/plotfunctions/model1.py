@@ -33,8 +33,8 @@ class GeneralProperties(object):
         self.load_defaults()
         self.restore_defaults()
 
-    def load_defaults(self, default_L=200, default_l=4.8, default_v=30.0,
-            default_c=1):
+    def load_defaults(self, default_L=200, default_l=4.8, default_v=40.0,
+            default_c=5):
         self.default_L = default_L
         self.default_l = default_l
         self.default_v = Conversions.kmph_to_metres(default_v)
@@ -98,8 +98,8 @@ class BridgeSide(object):
             tg = self.tg
         self.tr = (2*self.p.trij) + tg
 
-    def calc_na(self):
-        self.na = np.floor((self.tr * self.Q) / 60)
+    def calc_na(self, tg):
+        self.na = np.floor(((self.tr + tg) * self.Q) / 60)
 
     def calc_np(self, tg):
         tg_out = 0.0
@@ -122,10 +122,10 @@ class BridgeSide(object):
         self.r = np.floor(self.nq / self.np)
 
     def calc_tw(self, tg):
-        self.tw = ((self.r + 1) * self.tr) + (self.r * tg) 
+        self.tw = ((self.r + 1) * self.tr) + (self.r * tg)
 
 
-class Model1PlotFunction(BasePlotFunction):  
+class Model1PlotFunction(BasePlotFunction):
     """
     A class containing model state information.
     """
@@ -186,7 +186,7 @@ class Model1PlotFunction(BasePlotFunction):
     ####################################################################
 
     def _x_is_tg(self, var_min, var_max, var_data):
-        self.i.tg = np.arange(var_min, var_max + 0.01, 0.01)
+        self.i.tg = np.arange(var_min, var_max + 0.1, 0.1)
         return self.i.tg
 
 
@@ -201,11 +201,10 @@ class Model1PlotFunction(BasePlotFunction):
         for tg in self.i.tg.tolist():
             self.i.calc_tr(tg)
             self.i.calc_np(tg)
-            self.i.calc_na()
+            self.i.calc_na(tg)
             self.i.calc_nq()
             self.i.calc_r()
             self.i.calc_tw(tg)
             tw.append(self.i.tw)
-            # print(f'tg: {tg}, trij: {self.p.trij}, tr: {self.i.tr}, np: {self.i.np}, na: {self.i.na}, nq: {self.i.nq}, r: {self.i.r}, tw: {self.i.tw}')
 
         return np.asarray(tw)
