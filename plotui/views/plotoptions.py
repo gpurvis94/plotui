@@ -106,7 +106,7 @@ class DataOptionsFrame(PlotOptionsFrame):
         self.xvar_cmb = st.StringCombo(self, self._c.get_xvars(self._type))
         self._yvar_lbl = st.Label(self, 'Y variable:')
         self.yvar_cmb = st.StringCombo(self, self._c.get_yvars(self._type))
-        
+
     def _position_widgets(self):
         self._xvar_lbl.grid(row=0, column=0, sticky='w')
         self.xvar_cmb.grid(row=0, column=1, sticky='w')
@@ -129,9 +129,9 @@ class PlotRangeFrame(st.SubSubFrame):
     """
     def _create_widgets(self):
         self._description_lbl = st.Label(self, "Range:")
-        self.min_entry = st.FloatEntry(self, 0)
+        self.min_entry = st.FloatEntry(self, 1)
         self._to_lbl = st.Label(self, 'to')
-        self.max_entry = st.FloatEntry(self, 0)
+        self.max_entry = st.FloatEntry(self, 400)
 
     def _position_widgets(self):
         self._description_lbl.grid(row=0, column=0, sticky='w')
@@ -155,7 +155,7 @@ class PlotActionsFrame(PlotOptionsFrame):
     def _position_widgets(self):
         self._update_btn.grid(row=0, column=1)
         self._remove_btn.grid(row=0, column=2)
-        
+
     def _create_optional_widgets(self):
         if self._display_args.show_set_constants is True:
             self._const_btn = st.Button(self, "Set constants", self.set_const)
