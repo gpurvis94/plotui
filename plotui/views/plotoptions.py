@@ -46,6 +46,9 @@ class MainPlotOptionsFrame(st.SubFrame):
 
 
 class PlotOptionsFrame(st.SubSubFrame):
+    """
+    Inheriting from this class passes plot arguments to the child frame
+    """
     def __init__(self, parent, controller, plot_type, display_args=None):
         self._type = plot_type
         self._type_string = PlotType.to_string(self._type)
@@ -57,7 +60,7 @@ class PlotOptionsFrame(st.SubSubFrame):
 
 class PlotDataFrame(PlotOptionsFrame):
     """
-    The base class from which to inherit functionality
+    The frame which holds all plot data options
     """
     def _init_variables(self):
         self.key = str(uuid.uuid4())
@@ -141,6 +144,19 @@ class PlotRangeFrame(st.SubSubFrame):
 
     def _pad_columns(self):
         pass
+
+
+class LineOptionsFrame(PlotOptionsFrame):
+    """
+    A widget that allows you to change style options of a line
+    """
+    def _create_widgets(self):
+        self._update_btn = st.Button(self, "Redraw plot", self.update_plot)
+        self._remove_btn = st.Button(self, "Remove plot", self.delete_plot)
+
+    def _position_widgets(self):
+        self._update_btn.grid(row=0, column=1)
+        self._remove_btn.grid(row=0, column=2)
 
 
 class PlotActionsFrame(PlotOptionsFrame):

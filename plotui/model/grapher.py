@@ -207,10 +207,14 @@ class ModelGrapher(object):
         x = []
         y = []
         for key, val in self._plot_data.items():
-            x.append(val.limits.xmin)
-            x.append(val.limits.xmax)
-            y.append(val.limits.ymin)
-            y.append(val.limits.ymax)
+            if np.isfinite(val.limits.xmin):
+                x.append(val.limits.xmin)
+            if np.isfinite(val.limits.xmax):
+                x.append(val.limits.xmax)
+            if np.isfinite(val.limits.ymin):
+                y.append(val.limits.ymin)
+            if np.isfinite(val.limits.ymax):
+                y.append(val.limits.ymax)
         if len(x) == 0:
             x.append(0)
         if len(y) == 0:
