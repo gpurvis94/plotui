@@ -8,8 +8,11 @@ class BasePlotFunction(object):
     The base class from which to inherit plot functions
     """
     def __init__(self):
-        self._init_grapher_data()
         self._init_model_data()
+        self._init_grapher_data()
+
+    def _init_model_data(self):
+        self.model = None
 
     def _init_grapher_data(self):
         self.plot_type
@@ -21,11 +24,14 @@ class BasePlotFunction(object):
         self._x_var_to_func
         self._y_var_to_func
 
-    def _init_model_data(self):
-        pass
+    def get_constant_vals(self):
+        return self.model.get_constant_vals()
+
+    def set_constant_vals(self, vals):
+        return self.model.set_constant_vals(vals)
 
     def restore_defaults(self):
-        pass
+        self.model.restore_defaults()
 
     def get_xdata(self, var, var_min=None, var_max=None, var_data=None):
         return self._x_var_to_func[var](var_min, var_max, var_data)

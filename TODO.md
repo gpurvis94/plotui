@@ -11,3 +11,7 @@
 - Add export modes:
   - Sequentially: Print all selected plot functions to their own file. File name will be appended with 1, 2, 3, etc.
   - Share x data: Print all selected functions to the same file with the same x data, represented by the first column.
+## Settings
+- Create a settings screen
+  - Debug Settings
+    - Enable debug toggling of debug information to console
